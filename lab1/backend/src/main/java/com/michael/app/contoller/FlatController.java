@@ -6,10 +6,7 @@ import com.michael.app.service.FlatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/flat")
@@ -18,6 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class FlatController {
 
     private final FlatService flatService;
+
+    @GetMapping("/get/{id}")
+    public Flat getById(@PathVariable("id") Long id) {
+        return flatService.getById(id);
+    }
 
     @PostMapping("/create")
     @Operation(summary = "Создание Flat по всем его параметрам")

@@ -20,4 +20,9 @@ public class FlatService {
                 .orElseThrow(() -> new IllegalArgumentException("House с таким ID не существует"));
         return flatRepository.save(FlatDto.convertFromDto(flat, house));
     }
+
+    public Flat getById(Long id) {
+        return flatRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Flat с таким ID не существует"));
+    }
 }
