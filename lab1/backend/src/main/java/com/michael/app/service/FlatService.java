@@ -19,27 +19,27 @@ public class FlatService {
 
     public Flat create(FlatDto flat) {
         House house = houseRepository.findById(flat.getHouseId())
-                .orElseThrow(() -> new IllegalArgumentException("House с таким ID не существует"));
+                .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
         return flatRepository.save(FlatDto.convertFromDto(flat, house));
     }
 
     public Flat updateById(Long id, FlatDto flat) throws IllegalArgumentException {
-        if (!flatRepository.existsById(id)) throw new IllegalArgumentException("Flat с таким ID не существует");
+        if (!flatRepository.existsById(id)) throw new IllegalArgumentException("Flat с таким id не существует");
         House houseToUpdate = houseRepository.findById(flat.getHouseId())
-                .orElseThrow(() -> new IllegalArgumentException("House с таким ID не существует"));
+                .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
         Flat updatedFlat = FlatDto.convertFromDto(flat, houseToUpdate);
         updatedFlat.setId(id);
         return flatRepository.save(updatedFlat);
     }
 
     public void deleteById(Long id) {
-        if (!flatRepository.existsById(id)) throw new IllegalArgumentException("Flat с таким ID не существует");
+        if (!flatRepository.existsById(id)) throw new IllegalArgumentException("Flat с таким id не существует");
         flatRepository.deleteById(id);
     }
 
     public Flat getById(Long id) {
         return flatRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Flat с таким ID не существует"));
+                .orElseThrow(() -> new IllegalArgumentException("Flat с таким id не существует"));
     }
 
     public List<Flat> getAll() {

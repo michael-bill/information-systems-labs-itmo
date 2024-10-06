@@ -20,20 +20,20 @@ public class HouseService {
     }
 
     public House updateById(Long id, HouseDto house) {
-        if (!houseRepository.existsById(id)) throw new IllegalArgumentException("House с таким ID не существует");
+        if (!houseRepository.existsById(id)) throw new IllegalArgumentException("House с таким id не существует");
         House updatedHouse = HouseDto.convertFromDto(house);
         updatedHouse.setId(id);
         return houseRepository.save(updatedHouse);
     }
 
     public void deleteById(Long id) {
-        if (!houseRepository.existsById(id)) throw new IllegalArgumentException("House с таким ID не существует");
+        if (!houseRepository.existsById(id)) throw new IllegalArgumentException("House с таким id не существует");
         houseRepository.deleteById(id);
     }
 
     public House getById(Long id) {
         return houseRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("House с таким ID не существует"));
+                .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
     }
 
     public List<House> getAll() {
@@ -42,7 +42,7 @@ public class HouseService {
 
     public List<Flat> getAllFlatsByHouseId(Long id) {
         return houseRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("House с таким ID не существует"))
+                .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"))
                 .getFlats();
     }
 }
