@@ -50,7 +50,7 @@ public class HouseController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @Operation(summary = "Удалить House по id. Внимание! При удалении House, связанный с ним Flat тоже удаляется!")
+    @Operation(summary = "Удалить House по id. Внимание! При удалении House, связанные с ним Flat'ы тоже удаляются!")
     public void deleteHouse(@PathVariable("id") Long id) {
         houseService.deleteById(id);
     }
