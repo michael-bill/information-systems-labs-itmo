@@ -49,4 +49,13 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    @ExceptionHandler(NoRulesException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<MessageDto> handleMyCustomException(NoRulesException ex) {
+        return new ResponseEntity<>(
+                new MessageDto(Objects.requireNonNull(ex.getMessage())),
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }

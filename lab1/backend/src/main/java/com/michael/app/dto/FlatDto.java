@@ -3,6 +3,7 @@ package com.michael.app.dto;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.Flat.*;
 import com.michael.app.entity.House;
+import com.michael.app.entity.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -39,5 +40,11 @@ public class FlatDto {
                 .view(flatDto.getView())
                 .house(house)
                 .build();
+    }
+
+    public static Flat convertFromDto(FlatDto flatDto, House house, User user) {
+        Flat flat = convertFromDto(flatDto, house);
+        flat.setUser(user);
+        return flat;
     }
 }

@@ -72,6 +72,11 @@ public class Flat {
     @JoinColumn(name = "house_id", nullable = false)
     private House house;
 
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @PrePersist
     protected void onCreate() {
         this.creationDate = ZonedDateTime.now();

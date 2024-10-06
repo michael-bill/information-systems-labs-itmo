@@ -1,6 +1,7 @@
 package com.michael.app.dto;
 
 import com.michael.app.entity.House;
+import com.michael.app.entity.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,11 +12,17 @@ public class HouseDto {
     private Long year;
     private Long numberOfFlatsOnFloor;
 
-    public static House convertFromDto(HouseDto house) {
+    public static House convertFromDto(HouseDto houseDto) {
         return House.builder()
-                .name(house.getName())
-                .year(house.getYear())
-                .numberOfFlatsOnFloor(house.getNumberOfFlatsOnFloor())
+                .name(houseDto.getName())
+                .year(houseDto.getYear())
+                .numberOfFlatsOnFloor(houseDto.getNumberOfFlatsOnFloor())
                 .build();
+    }
+
+    public static House convertFromDto(HouseDto houseDto, User user) {
+        House house = convertFromDto(houseDto);
+        house.setUser(user);
+        return house;
     }
 }

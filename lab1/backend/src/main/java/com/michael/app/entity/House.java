@@ -42,4 +42,9 @@ public class House {
     @JsonIgnore
     @OneToMany(mappedBy = "house", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Flat> flats;
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

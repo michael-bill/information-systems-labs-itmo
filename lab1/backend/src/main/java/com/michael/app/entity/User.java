@@ -1,5 +1,6 @@
 package com.michael.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +16,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_username", columnList = "username")
+})
 public class User implements UserDetails {
 
     @Id
@@ -27,33 +30,40 @@ public class User implements UserDetails {
     @Column(name = "username", unique = true, nullable = false)
     private String username;
 
+    @JsonIgnore
     @Column(name = "password", nullable = false)
     private String password;
 
+    @JsonIgnore
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         return true;
