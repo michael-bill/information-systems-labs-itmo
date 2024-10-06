@@ -19,20 +19,39 @@ public class HouseController {
 
     private final HouseService houseService;
 
-    @PostMapping("/create")
-    @Operation(summary = "Создание House по всем его параметрам")
-    public House createFlat(@RequestBody HouseDto house) {
-        return houseService.createHouse(house);
-    }
-
     @GetMapping("/get/{id}")
     @Operation(summary = "Получение House по id")
     public House getById(@PathVariable("id") Long id) {
         return houseService.getById(id);
     }
 
+    @GetMapping("/get-all")
+    @Operation(summary = "Получение всего списка House")
+    public List<House> getAll() {
+        return houseService.getAll();
+    }
+
     @GetMapping("/get-all-flats/{id}")
+    @Operation(summary = "Получение всех Flats по id House")
     public List<Flat> getAllFlatsByHouseId(@PathVariable("id") Long id) {
         return houseService.getAllFlatsByHouseId(id);
+    }
+
+    @PostMapping("/create")
+    @Operation(summary = "Создание House по всем его параметрам")
+    public House createFlat(@RequestBody HouseDto house) {
+        return houseService.create(house);
+    }
+
+    @PutMapping("/update/{id}")
+    @Operation(summary = "Обновить House по id и его параметрам")
+    public House updateHouse(@PathVariable("id") Long id, @RequestBody HouseDto house) {
+        return houseService.updateById(id, house);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "Удалить House по id. Внимание! При удалении House, связанный с ним Flat тоже удаляется!")
+    public void deleteHouse(@PathVariable("id") Long id) {
+        houseService.deleteById(id);
     }
 }
