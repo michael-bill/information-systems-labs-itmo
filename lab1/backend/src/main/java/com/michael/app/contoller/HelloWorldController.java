@@ -16,7 +16,6 @@ public class HelloWorldController {
     public MessageDto helloWorld(@AuthenticationPrincipal User user) {
         return new MessageDto(
                 "Hello, World! Username = " + user.getUsername() +
-                ", id = " + user.getId() +
                 ", with roles " + user.getAuthorities()
         );
     }
