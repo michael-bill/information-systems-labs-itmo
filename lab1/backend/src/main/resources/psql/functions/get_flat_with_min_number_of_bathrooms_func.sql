@@ -1,4 +1,4 @@
-drop function get_flat_with_min_number_of_bathrooms_func();
+drop function if exists get_flat_with_min_number_of_bathrooms_func();
 
 create or replace function get_flat_with_min_number_of_bathrooms_func()
     returns flat

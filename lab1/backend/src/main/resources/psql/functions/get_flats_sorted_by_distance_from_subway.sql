@@ -1,4 +1,4 @@
-drop function get_flats_sorted_by_distance_from_subway(bigint, bigint);
+drop function if exists get_flats_sorted_by_distance_from_subway(bigint, bigint);
 
 create or replace function get_flats_sorted_by_distance_from_subway(metro_x bigint, metro_y bigint)
     returns setof flat

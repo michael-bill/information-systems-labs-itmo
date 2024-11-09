@@ -1,4 +1,4 @@
-drop function choise_more_cheaper_flat_by_ids(bigint, bigint);
+drop function if exists choise_more_cheaper_flat_by_ids(bigint, bigint);
 
 create or replace function choose_more_cheaper_flat_by_ids(id1 bigint, id2 bigint)
     returns flat

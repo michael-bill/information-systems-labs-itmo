@@ -1,4 +1,4 @@
-drop function get_flat_with_max_coordinates_func();
+drop function if exists get_flat_with_max_coordinates_func();
 
 create or replace function get_flat_with_max_coordinates_func()
     returns flat

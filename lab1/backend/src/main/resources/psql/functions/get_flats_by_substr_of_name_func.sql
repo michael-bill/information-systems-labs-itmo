@@ -1,4 +1,4 @@
-drop function get_flats_by_substr_of_name_func(varchar);
+drop function if exists get_flats_by_substr_of_name_func(varchar);
 
 create or replace function get_flats_by_substr_of_name_func(prefix varchar)
     returns setof flat
