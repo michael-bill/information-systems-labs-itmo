@@ -7,6 +7,8 @@ import com.michael.app.entity.User;
 import com.michael.app.exception.NoRulesException;
 import com.michael.app.repository.HouseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,8 +47,8 @@ public class HouseService {
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
     }
 
-    public List<House> getAll() {
-        return houseRepository.findAll();
+    public Page<House> getAll(Pageable pageable) {
+        return houseRepository.findAll(pageable);
     }
 
     public List<Flat> getAllFlatsByHouseId(Long id) {

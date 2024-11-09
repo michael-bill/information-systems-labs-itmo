@@ -1,7 +1,6 @@
 package com.michael.app.dto;
 
 import com.michael.app.entity.Flat;
-import com.michael.app.entity.Flat.*;
 import com.michael.app.entity.House;
 import com.michael.app.entity.User;
 import lombok.Builder;
@@ -13,7 +12,7 @@ import java.time.ZonedDateTime;
 @Builder
 public class FlatDto {
     private String name;
-    private Coordinates coordinates;
+    private Flat.Coordinates coordinates;
     private ZonedDateTime creationDate;
     private Float area;
     private Float price;
@@ -22,7 +21,7 @@ public class FlatDto {
     private Integer numberOfRooms;
     private Integer numberOfBathrooms;
     private Double timeToMetroByTransport;
-    private View view;
+    private Flat.View view;
     private Long houseId;
 
     public static Flat convertFromDto(FlatDto flatDto, House house) {

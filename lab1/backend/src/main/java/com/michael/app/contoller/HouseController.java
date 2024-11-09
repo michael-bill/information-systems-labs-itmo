@@ -6,8 +6,13 @@ import com.michael.app.entity.House;
 import com.michael.app.entity.User;
 import com.michael.app.service.HouseService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,9 +33,21 @@ public class HouseController {
     }
 
     @GetMapping("/get-all")
-    @Operation(summary = "Получение всего списка House")
-    public List<House> getAll() {
-        return houseService.getAll();
+    @Operation(summary = "Получение всего списка Flat")
+    public Page<House> getAll(
+            @Parameter(description = "Номер страницы (начинается с 0)")
+            @RequestParam(defaultValue = "0")
+            int page,
+            @Parameter(description = "Количество элементов на странице")
+            @RequestParam(defaultValue = "10")
+            int size,
+            @Parameter(description = "Параметры сортировки в формате 'поле,порядок'")
+            @RequestParam(defaultValue = "id,asc")
+            String sort
+    ) {
+        var sortValues = sort.split(",");
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortValues[1]), sortValues[0]);
+        return houseService.getAll(pageable);
     }
 
     @GetMapping("/get-all-flats/{id}")

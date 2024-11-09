@@ -8,6 +8,8 @@ import com.michael.app.exception.NoRulesException;
 import com.michael.app.repository.FlatRepository;
 import com.michael.app.repository.HouseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -50,8 +52,8 @@ public class FlatService {
                 .orElseThrow(() -> new IllegalArgumentException("Flat с таким id не существует"));
     }
 
-    public List<Flat> getAll() {
-        return flatRepository.findAll();
+    public Page<Flat> getAll(Pageable pageable) {
+        return flatRepository.findAll(pageable);
     }
 
     public Flat getFlatWithMinNumberOfBathrooms() {
