@@ -54,6 +54,30 @@ public class FlatService {
         return flatRepository.findAll();
     }
 
+    public Flat getFlatWithMinNumberOfBathrooms() {
+        return flatRepository.getFlatWithMinNumberOfBathrooms()
+                .orElseThrow(() -> new IllegalArgumentException("Ни одного Flat ещё не существует"));
+    }
+
+    public Flat getFlatWithMaxCoordinates() {
+        return flatRepository.getFlatWithMaxCoordinates()
+                .orElseThrow(() -> new IllegalArgumentException("Ни одного Flat ещё не существует"));
+    }
+
+    public List<Flat> getFlatsBySubstringOfName(String prefix) {
+        return flatRepository.getFlatsBySubstringOfName(prefix);
+    }
+
+    public List<Flat> getFlatsSortedByDistanceFromSubway(Long metroX, Long metroY) {
+        return flatRepository.getFlatsSortedByDistanceFromSubway(metroX, metroY);
+    }
+
+    public Flat chooseMoreCheaperFlatByIds(Long id1, Long id2) {
+        return flatRepository.chooseMoreCheaperFlatByIds(id1, id2)
+                .orElseThrow(() -> new IllegalArgumentException("Произошла ошибка при выполнении запроса, " +
+                        "вероятно id были указаны неверно."));
+    }
+
     private boolean hasRulesForFlat(Flat flat, User user) {
         if (user.getRole() == User.Role.ROLE_ADMIN) return true;
         return flat.getUser().getId().equals(user.getId());

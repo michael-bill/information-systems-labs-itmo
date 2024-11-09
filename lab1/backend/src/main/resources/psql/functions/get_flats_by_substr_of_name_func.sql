@@ -1,7 +1,12 @@
+drop function get_flats_by_substr_of_name_func(varchar);
+
 create or replace function get_flats_by_substr_of_name_func(prefix varchar)
-    returns flat[]
+    returns setof flat
 as $$
-select array_agg(f)
-from flat f
-where f.name like prefix || '%';
-$$ language sql;
+begin
+    return query
+    select *
+    from flat
+    where name like prefix || '%';
+end;
+$$ language plpgsql;

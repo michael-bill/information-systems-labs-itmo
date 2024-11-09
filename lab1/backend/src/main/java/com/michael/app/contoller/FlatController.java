@@ -22,7 +22,9 @@ public class FlatController {
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получение Flat по id")
-    public Flat getById(@PathVariable("id") Long id) {
+    public Flat getById(
+            @PathVariable("id") Long id
+    ) {
         return flatService.getById(id);
     }
 
@@ -58,5 +60,43 @@ public class FlatController {
             @AuthenticationPrincipal User user
             ) {
         flatService.deleteById(id, user);
+    }
+
+    @GetMapping("get-flat-with-min-number-of-bathrooms")
+    @Operation(summary = "Получение Flat с минимальным количеством bathrooms")
+    public Flat getFlatWithMinNumberOfBathrooms() {
+        return flatService.getFlatWithMinNumberOfBathrooms();
+    }
+
+    @GetMapping("get-flat-with-max-coordinates")
+    @Operation(summary = "Получение Flat с максимальными координатами")
+    public Flat getFlatWithMaxCoordinates() {
+        return flatService.getFlatWithMaxCoordinates();
+    }
+
+    @GetMapping("get-flats-by-substring-of-name")
+    @Operation(summary = "Получение Flats по префику имени")
+    public List<Flat> getFlatsBySubstringOfName(
+            @RequestParam("prefix") String prefix
+    ) {
+        return flatService.getFlatsBySubstringOfName(prefix);
+    }
+
+    @GetMapping("get-flats-sorted-by-distance-from-subway")
+    @Operation(summary = "Получение Flats по префику имени")
+    public List<Flat> getFlatsBySubstringOfName(
+            @RequestParam("metroX") Long metroX,
+            @RequestParam("metroY") Long metroY
+    ) {
+        return flatService.getFlatsSortedByDistanceFromSubway(metroX, metroY);
+    }
+
+    @GetMapping("choose-more-cheaper-flat-by-ids")
+    @Operation(summary = "Выбрать более дешевый Flat по id")
+    public Flat chooseMoreCheaperFlatByIds(
+            @RequestParam("id1") Long id1,
+            @RequestParam("id2") Long id2
+    ) {
+        return flatService.chooseMoreCheaperFlatByIds(id1, id2);
     }
 }

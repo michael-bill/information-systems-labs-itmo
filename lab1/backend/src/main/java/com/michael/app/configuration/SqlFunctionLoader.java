@@ -24,8 +24,8 @@ public class SqlFunctionLoader {
     @PostConstruct
     public void loadSqlFunctions() {
         String[] sqlFiles = new String[]{
-                "classpath:psql/functions/choise_more_cheaper_flat_by_ids.sql",
-                "classpath:psql/functions/get_flat_by_min_number_of_bathrooms_func.sql",
+                "classpath:psql/functions/choose_more_cheaper_flat_by_ids.sql",
+                "classpath:psql/functions/get_flat_with_min_number_of_bathrooms_func.sql",
                 "classpath:psql/functions/get_flat_with_max_coordinates_func.sql",
                 "classpath:psql/functions/get_flats_by_substr_of_name_func.sql",
                 "classpath:psql/functions/get_flats_sorted_by_distance_from_subway.sql"
