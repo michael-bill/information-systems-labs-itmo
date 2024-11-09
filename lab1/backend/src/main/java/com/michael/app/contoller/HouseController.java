@@ -59,8 +59,8 @@ public class HouseController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @Operation(summary = "Удалить House по id. " +
-            "Внимание! При удалении House, связанные с ним Flat'ы тоже удаляются! " +
+    @Operation(summary = "Удалить House по id",
+    description = "Внимание! При удалении House, связанные с ним Flat'ы тоже удаляются! " +
             "Также ещё один нюанс: если House привязан с каким-то Flat, на которые у " +
             "вас нет прав, операция не выполнится")
     public void deleteHouse(
