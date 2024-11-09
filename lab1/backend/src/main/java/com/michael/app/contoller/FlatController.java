@@ -83,7 +83,7 @@ public class FlatController {
     }
 
     @GetMapping("get-flats-sorted-by-distance-from-subway")
-    @Operation(summary = "Получение Flats по префику имени")
+    @Operation(summary = "Получение отсортированного списка Flats по расстоянию от метро")
     public List<Flat> getFlatsBySubstringOfName(
             @RequestParam("metroX") Long metroX,
             @RequestParam("metroY") Long metroY
