@@ -93,6 +93,10 @@ public class Flat {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @NotNull
+    @Column(name = "is_editable", nullable = false, columnDefinition = "boolean default true")
+    private Boolean editable;
+
     @PrePersist
     protected void onCreate() {
         this.creationDate = ZonedDateTime.now();

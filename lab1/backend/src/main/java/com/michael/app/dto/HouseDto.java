@@ -11,12 +11,14 @@ public class HouseDto {
     private String name;
     private Long year;
     private Long numberOfFlatsOnFloor;
+    private Boolean editable;
 
     public static House convertFromDto(HouseDto houseDto) {
         return House.builder()
                 .name(houseDto.getName())
                 .year(houseDto.getYear())
                 .numberOfFlatsOnFloor(houseDto.getNumberOfFlatsOnFloor())
+                .editable(houseDto.getEditable())
                 .build();
     }
 

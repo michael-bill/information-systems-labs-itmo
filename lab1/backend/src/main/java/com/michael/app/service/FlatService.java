@@ -31,7 +31,8 @@ public class FlatService {
         Flat flatToUpdate = flatRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Flat с таким id не существует"));
         if (!hasRulesForFlat(flatToUpdate, user))
-            throw new NoRulesException("У вас не прав на редактирование объекта Flat, так как вы не его владелец");
+            throw new NoRulesException("У вас не прав на редактирование объекта Flat, " +
+                    "так как вы не его владелец или пользователь запретил его редактировать");
         House houseToUpdate = houseRepository.findById(flat.getHouseId())
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
         Flat updatedFlat = FlatDto.convertFromDto(flat, houseToUpdate, user);
@@ -43,7 +44,8 @@ public class FlatService {
         Flat flatToDelete = flatRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Flat с таким id не существует"));
         if (!hasRulesForFlat(flatToDelete, user))
-            throw new NoRulesException("У вас не прав на удаление объекта Flat, так как вы не его владелец");
+            throw new NoRulesException("У вас не прав на удаление объекта Flat, " +
+                    "так как вы не его владелец или пользователь запретил его удалять");
         flatRepository.deleteById(id);
     }
 
@@ -81,7 +83,7 @@ public class FlatService {
     }
 
     private boolean hasRulesForFlat(Flat flat, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN) return true;
+        if (user.getRole() == User.Role.ROLE_ADMIN && flat.getEditable()) return true;
         return flat.getUser().getId().equals(user.getId());
     }
 }

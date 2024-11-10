@@ -27,7 +27,8 @@ public class HouseService {
         House houseToUpdate = houseRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
         if (!hasRulesForUpdateHouse(houseToUpdate, user))
-            throw new NoRulesException("У вас не прав на редактирование объекта House, так как вы не его владелец");
+            throw new NoRulesException("У вас не прав на редактирование объекта House, " +
+                    "так как вы не его владелец или пользователь запретил его редактировать");
         House updatedHouse = HouseDto.convertFromDto(house);
         updatedHouse.setId(id);
         return houseRepository.save(updatedHouse);
@@ -37,8 +38,8 @@ public class HouseService {
         House houseToDelete = houseRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
         if (!hasRulesForDeleteHouse(houseToDelete, user))
-            throw new NoRulesException("У вас не прав на удаление объекта House, так как вы не его владелец " +
-                    "или вы не владелец всех Flats, что с ним связаны");
+            throw new NoRulesException("У вас не прав на удаление объекта House, так как вы не его владелец, " +
+                    "или вы не владелец всех Flats, что с ним связаны, или пользователь запретил его удалять");
         houseRepository.deleteById(id);
     }
 
@@ -58,12 +59,12 @@ public class HouseService {
     }
 
     private boolean hasRulesForUpdateHouse(House house, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN) return true;
+        if (user.getRole() == User.Role.ROLE_ADMIN && house.getEditable()) return true;
         return house.getUser().getId().equals(user.getId());
     }
 
     private boolean hasRulesForDeleteHouse(House house, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN) return true;
+        if (user.getRole() == User.Role.ROLE_ADMIN && house.getEditable()) return true;
         return
                 house.getUser().getId().equals(user.getId()) &&
                 house.getFlats().stream().allMatch(flat -> flat.getUser().getId().equals(user.getId()));
