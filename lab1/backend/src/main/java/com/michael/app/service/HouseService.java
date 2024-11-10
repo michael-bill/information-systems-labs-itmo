@@ -6,12 +6,16 @@ import com.michael.app.entity.House;
 import com.michael.app.entity.User;
 import com.michael.app.exception.NoRulesException;
 import com.michael.app.repository.HouseRepository;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +54,23 @@ public class HouseService {
 
     public Page<House> getAll(Pageable pageable) {
         return houseRepository.findAll(pageable);
+    }
+
+    public Page<House> getByFilter(Map<String, Object> filterParams, Pageable pageable) {
+        Specification<House> specification = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            filterParams.forEach((key, value) -> {
+                try {
+                    String valueAsString = value.toString();
+                    predicates.add(criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get(key).as(String.class)),
+                            "%" + valueAsString.toLowerCase() + "%")
+                    );
+                } catch (Exception ignored) { }
+            });
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+        return houseRepository.findAll(specification, pageable);
     }
 
     public List<Flat> getAllFlatsByHouseId(Long id) {

@@ -7,12 +7,16 @@ import com.michael.app.entity.User;
 import com.michael.app.exception.NoRulesException;
 import com.michael.app.repository.FlatRepository;
 import com.michael.app.repository.HouseRepository;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +60,23 @@ public class FlatService {
 
     public Page<Flat> getAll(Pageable pageable) {
         return flatRepository.findAll(pageable);
+    }
+
+    public Page<Flat> getByFilter(Map<String, Object> filterParams, Pageable pageable) {
+        Specification<Flat> specification = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            filterParams.forEach((key, value) -> {
+                try {
+                    String valueAsString = value.toString();
+                    predicates.add(criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get(key).as(String.class)),
+                            "%" + valueAsString.toLowerCase() + "%")
+                    );
+                } catch (Exception ignored) { }
+            });
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+        return flatRepository.findAll(specification, pageable);
     }
 
     public Flat getFlatWithMinNumberOfBathrooms() {

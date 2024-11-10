@@ -5,12 +5,13 @@ import java.util.Optional;
 
 import com.michael.app.entity.Flat;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface FlatRepository extends JpaRepository<Flat, Long> {
+public interface FlatRepository extends JpaRepository<Flat, Long>, JpaSpecificationExecutor<Flat> {
     @Query(value = "select * from get_flat_with_min_number_of_bathrooms_func()", nativeQuery = true)
     Optional<Flat> getFlatWithMinNumberOfBathrooms();
 

@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/flat")
@@ -49,6 +50,26 @@ public class FlatController {
         var sortValues = sort.split(",");
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortValues[1]), sortValues[0]);
         return flatService.getAll(pageable);
+    }
+
+    @PostMapping("/get-by-filter")
+    @Operation(summary = "Получение списка Flat по фильтру")
+    public Page<Flat> getByFilter(
+            @RequestBody
+            Map<String, Object> filterParams,
+            @Parameter(description = "Номер страницы (начинается с 0)")
+            @RequestParam(defaultValue = "0")
+            int page,
+            @Parameter(description = "Количество элементов на странице")
+            @RequestParam(defaultValue = "10")
+            int size,
+            @Parameter(description = "Параметры сортировки в формате 'поле,порядок'")
+            @RequestParam(defaultValue = "id,asc")
+            String sort
+    ) {
+        var sortValues = sort.split(",");
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortValues[1]), sortValues[0]);
+        return flatService.getByFilter(filterParams, pageable);
     }
 
     @PostMapping("/create")

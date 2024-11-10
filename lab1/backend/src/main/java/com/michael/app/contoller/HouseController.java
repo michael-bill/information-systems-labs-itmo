@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/house")
@@ -33,7 +34,7 @@ public class HouseController {
     }
 
     @GetMapping("/get-all")
-    @Operation(summary = "Получение всего списка Flat")
+    @Operation(summary = "Получение всего списка House")
     public Page<House> getAll(
             @Parameter(description = "Номер страницы (начинается с 0)")
             @RequestParam(defaultValue = "0")
@@ -48,6 +49,26 @@ public class HouseController {
         var sortValues = sort.split(",");
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortValues[1]), sortValues[0]);
         return houseService.getAll(pageable);
+    }
+
+    @PostMapping("/get-by-filter")
+    @Operation(summary = "Получение списка Flat по фильтру")
+    public Page<House> getByFilter(
+            @RequestBody
+            Map<String, Object> filterParams,
+            @Parameter(description = "Номер страницы (начинается с 0)")
+            @RequestParam(defaultValue = "0")
+            int page,
+            @Parameter(description = "Количество элементов на странице")
+            @RequestParam(defaultValue = "10")
+            int size,
+            @Parameter(description = "Параметры сортировки в формате 'поле,порядок'")
+            @RequestParam(defaultValue = "id,asc")
+            String sort
+    ) {
+        var sortValues = sort.split(",");
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(sortValues[1]), sortValues[0]);
+        return houseService.getByFilter(filterParams, pageable);
     }
 
     @GetMapping("/get-all-flats/{id}")
