@@ -39,6 +39,10 @@ public class UserService {
         return getByUsername(username);
     }
 
+    public Long getAdminCount() {
+        return repository.countByRole(User.Role.ROLE_ADMIN);
+    }
+
     @Deprecated
     public void getAdmin() {
         var user = getCurrentUser();
