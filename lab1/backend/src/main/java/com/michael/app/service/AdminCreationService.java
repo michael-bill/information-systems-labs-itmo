@@ -59,7 +59,7 @@ public class AdminCreationService {
 
     public void rejectRequest(User rejectedBy, Long requestId) {
         if (rejectedBy.getRole() != User.Role.ROLE_ADMIN) {
-            throw new NoRulesException("Пользователь не может одобрять заявки, это действие только для администратора");
+            throw new NoRulesException("Пользователь не может отклонять заявки, это действие только для администратора");
         }
         AdminCreationRequest request = adminCreationRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Заявки с таким id не найдено"));
