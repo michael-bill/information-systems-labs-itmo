@@ -24,24 +24,29 @@ public class FlatService {
 
     private final FlatRepository flatRepository;
     private final HouseRepository houseRepository;
+    private final NotificationService notificationService;
 
-    public Flat create(FlatDto flat, User user) {
-        House house = houseRepository.findById(flat.getHouseId())
+    public Flat create(FlatDto flatDto, User user) {
+        House house = houseRepository.findById(flatDto.getHouseId())
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
-        return flatRepository.save(FlatDto.convertFromDto(flat, house, user));
+        Flat flat = flatRepository.save(FlatDto.convertFromDto(flatDto, house, user));
+        notificationService.notifyAboutCreate(flat);
+        return flat;
     }
 
-    public Flat updateById(Long id, FlatDto flat, User user) throws IllegalArgumentException {
+    public Flat updateById(Long id, FlatDto flatDto, User user) throws IllegalArgumentException {
         Flat flatToUpdate = flatRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Flat с таким id не существует"));
         if (!hasRulesForFlat(flatToUpdate, user))
             throw new NoRulesException("У вас не прав на редактирование объекта Flat, " +
                     "так как вы не его владелец или пользователь запретил его редактировать");
-        House houseToUpdate = houseRepository.findById(flat.getHouseId())
+        House houseToUpdate = houseRepository.findById(flatDto.getHouseId())
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
-        Flat updatedFlat = FlatDto.convertFromDto(flat, houseToUpdate, user);
+        Flat updatedFlat = FlatDto.convertFromDto(flatDto, houseToUpdate, user);
         updatedFlat.setId(id);
-        return flatRepository.save(updatedFlat);
+        updatedFlat = flatRepository.save(updatedFlat);
+        notificationService.notifyAboutChange(updatedFlat);
+        return updatedFlat;
     }
 
     public void deleteById(Long id, User user) {
@@ -51,6 +56,7 @@ public class FlatService {
             throw new NoRulesException("У вас не прав на удаление объекта Flat, " +
                     "так как вы не его владелец или пользователь запретил его удалять");
         flatRepository.deleteById(id);
+        notificationService.notifyAboutDeleteFlat(id);
     }
 
     public Flat getById(Long id) {

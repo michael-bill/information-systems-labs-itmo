@@ -22,20 +22,25 @@ import java.util.Map;
 public class HouseService {
 
     private final HouseRepository houseRepository;
+    private final NotificationService notificationService;
 
-    public House create(HouseDto house, User user) {
-        return houseRepository.save(HouseDto.convertFromDto(house, user));
+    public House create(HouseDto houseDto, User user) {
+        House house = houseRepository.save(HouseDto.convertFromDto(houseDto, user));
+        notificationService.notifyAboutCreate(house);
+        return house;
     }
 
-    public House updateById(Long id, HouseDto house, User user) {
+    public House updateById(Long id, HouseDto houseDto, User user) {
         House houseToUpdate = houseRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
         if (!hasRulesForUpdateHouse(houseToUpdate, user))
             throw new NoRulesException("У вас не прав на редактирование объекта House, " +
                     "так как вы не его владелец или пользователь запретил его редактировать");
-        House updatedHouse = HouseDto.convertFromDto(house);
+        House updatedHouse = HouseDto.convertFromDto(houseDto);
         updatedHouse.setId(id);
-        return houseRepository.save(updatedHouse);
+        updatedHouse = houseRepository.save(updatedHouse);
+        notificationService.notifyAboutChange(updatedHouse);
+        return updatedHouse;
     }
 
     public void deleteById(Long id, User user) {
@@ -45,6 +50,7 @@ public class HouseService {
             throw new NoRulesException("У вас не прав на удаление объекта House, так как вы не его владелец, " +
                     "или вы не владелец всех Flats, что с ним связаны, или пользователь запретил его удалять");
         houseRepository.deleteById(id);
+        notificationService.notifyAboutDeleteHouse(id);
     }
 
     public House getById(Long id) {
