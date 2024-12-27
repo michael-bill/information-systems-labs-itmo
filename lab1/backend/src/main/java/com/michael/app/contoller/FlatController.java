@@ -120,13 +120,10 @@ public class FlatController {
         return flatService.getFlatsBySubstringOfName(prefix);
     }
 
-    @GetMapping("get-flats-sorted-by-distance-from-subway")
-    @Operation(summary = "Получение отсортированного списка Flats по расстоянию от метро")
-    public List<Flat> getFlatsBySubstringOfName(
-            @RequestParam("metroX") Long metroX,
-            @RequestParam("metroY") Long metroY
-    ) {
-        return flatService.getFlatsSortedByDistanceFromSubway(metroX, metroY);
+    @GetMapping("get-flats-ordered-by-time-to-metro-on-foot")
+    @Operation(summary = "Получение отсортированного списка Flats по времени до метро пешком")
+    public List<Flat> getFlatsOrderedByTimeToMetroOnFoot() {
+        return flatService.getFlatsOrderedByTimeToMetroOnFoot();
     }
 
     @GetMapping("choose-more-cheaper-flat-by-ids")

@@ -75,10 +75,20 @@ public class HouseService {
             List<Predicate> predicates = new ArrayList<>();
             filterParams.forEach((key, value) -> {
                 try {
-                    String valueAsString = value.toString();
-                    predicates.add(criteriaBuilder.like(
+                    String valueAsString = value.toString().toLowerCase();
+                    if (key.equals("username")) {
+                        // Handle username filtering through the user relationship
+                        predicates.add(criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get("user").get("username")),
+                            "%" + valueAsString + "%"
+                        ));
+                    } else {
+                        // Handle other fields as before
+                        predicates.add(criteriaBuilder.like(
                             criteriaBuilder.lower(root.get(key).as(String.class)),
-                            "%" + valueAsString.toLowerCase() + "%"));
+                            "%" + valueAsString + "%"
+                        ));
+                    }
                 } catch (Exception ignored) {
                 }
             });

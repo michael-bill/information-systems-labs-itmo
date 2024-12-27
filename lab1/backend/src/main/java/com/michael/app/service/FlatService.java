@@ -81,8 +81,7 @@ public class FlatService {
                     String valueAsString = value.toString();
                     predicates.add(criteriaBuilder.like(
                             criteriaBuilder.lower(root.get(key).as(String.class)),
-                            "%" + valueAsString.toLowerCase() + "%")
-                    );
+                            "%" + valueAsString.toLowerCase() + "%"));
                 } catch (Exception ignored) { }
             });
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -104,18 +103,25 @@ public class FlatService {
         return flatRepository.getFlatsBySubstringOfName(prefix);
     }
 
-    public List<Flat> getFlatsSortedByDistanceFromSubway(Long metroX, Long metroY) {
-        return flatRepository.getFlatsSortedByDistanceFromSubway(metroX, metroY);
+    public List<Flat> getFlatsOrderedByTimeToMetroOnFoot() {
+        return flatRepository.getFlatsOrderedByTimeToMetroOnFoot();
     }
 
     public Flat chooseMoreCheaperFlatByIds(Long id1, Long id2) {
+        if (!flatRepository.existsById(id1)) {
+            throw new IllegalArgumentException("Квартира с id=" + id1 + " не существует");
+        }
+        if (!flatRepository.existsById(id2)) {
+            throw new IllegalArgumentException("Квартира с id=" + id2 + " не существует"); 
+        }
         return flatRepository.chooseMoreCheaperFlatByIds(id1, id2)
-                .orElseThrow(() -> new IllegalArgumentException("Произошла ошибка при выполнении запроса, " +
-                        "вероятно id были указаны неверно."));
+                .orElseThrow(() -> new IllegalArgumentException("Произошла непредвиденная ошибка при выполнении запроса."));
     }
 
     private boolean hasRulesForFlat(Flat flat, User user) {
-        return user.getRole() == User.Role.ROLE_ADMIN || flat.getUser().getId().equals(user.getId());
+        if (user.getRole() == User.Role.ROLE_ADMIN)
+            return true;
+        return flat.getUser().getId().equals(user.getId());
     }
 
     public void deleteByHouseId(Long houseId) {

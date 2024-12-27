@@ -25,8 +25,8 @@ public interface FlatRepository extends JpaRepository<Flat, Long>, JpaSpecificat
     @Query(value = "select * from get_flats_by_substr_of_name_func(:prefix)", nativeQuery = true)
     List<Flat> getFlatsBySubstringOfName(@Param("prefix") String prefix);
 
-    @Query(value = "select * from get_flats_sorted_by_distance_from_subway(:metro_x, :metro_y)", nativeQuery = true)
-    List<Flat> getFlatsSortedByDistanceFromSubway(@Param("metro_x") Long metroX, @Param("metro_y") Long metroY);
+    @Query(value = "select * from flat order by time_to_metro_on_foot asc", nativeQuery = true)
+    List<Flat> getFlatsOrderedByTimeToMetroOnFoot();
 
     @Query(value = "select * from choose_more_cheaper_flat_by_ids(:id1, :id2)", nativeQuery = true)
     Optional<Flat> chooseMoreCheaperFlatByIds(@Param("id1") Long id1, @Param("id2") Long id2);
