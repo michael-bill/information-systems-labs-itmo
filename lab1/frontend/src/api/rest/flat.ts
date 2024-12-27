@@ -107,3 +107,27 @@ export const createFlat = async (token: string, flat: FlatDTO) => {
     };
   }
 };
+
+export const fetchWithFilter = async (
+  token: string,
+  filterParams: Record<string, any>,
+  page: number,
+  size: number,
+  sortColumn: string,
+  sortDirection: string
+) => {
+  return await axios.post(
+    `${BASE_URL}/get-by-filter`,
+    filterParams,
+    {
+      params: {
+        page,
+        size,
+        sort: `${sortColumn},${sortDirection}`,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};

@@ -78,11 +78,10 @@ export const comparePrices = async (token: string, id1: string, id2: string) => 
 };
 
 
-export const sortByMetroTime = async (token: string, X: number, Y: number) => {
+export const sortByMetroTime = async (token: string) => {
   try {
-    const response = await axios.get(`${BASE_URL}/get-flats-sorted-by-distance-from-subway`, {
+    const response = await axios.get(`${BASE_URL}/get-flats-ordered-by-time-to-metro-on-foot`, {
       headers: { Authorization: `Bearer ${token}` },
-      params: { metroX: X, metroY: Y },
     });
     return response;
   } catch (error: any) {

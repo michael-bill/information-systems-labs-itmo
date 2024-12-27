@@ -7,10 +7,11 @@ import { Pagination } from "./Pagination";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import Toast from "./Toast";
 import FlatForm from "./FlatForm";
-import { createFlat, deleteFlat, fetchFlatsWithPagination, updateFlat } from "../api/rest/flat";
+import * as flatApi from "../api/rest/flat";
 import { FlatDTO } from "../types/FlatDTO";
 import Loading from "./Loading";
 import { createFlatWebSocket } from "../api/ws/flatWS";
+import Filter from "../types/Filter";
 
 const FlatList: React.FC = () => {
     const [flats, setFlats] = useState<Flat[]>([]);
@@ -40,50 +41,63 @@ const FlatList: React.FC = () => {
 
     const [isPageChanging, setIsPageChanging] = useState(false);
 
-    // Add search state
-    const [searchQuery, setSearchQuery] = useState("");
+    const [filters, setFilters] = useState<Filter[]>([{ column: "id", value: "" }]);
 
-    const fetchFlats = useCallback(async () => {
+    const fetchWithFilter = useCallback(async () => {
         if (isInitialLoading) {
             setIsLoading(true);
         }
         setIsPageChanging(true);
-        const response = await fetchFlatsWithPagination(
-            token,
-            currentPage - 1,
-            pageSize,
-            sortColumn,
-            sortDirection
-        );
-        if (response.status !== 200) {
-            setToast({
-                message: response.data.message || "Не удалось получить квартиры",
-                type: "error",
-            });
-            return;
-        }
-        setFlats(response.data.content);
-        setTotalPages(response.data.totalPages);
-        setIsLoading(false);
-        setIsInitialLoading(false);
-        setIsPageChanging(false);
-    }, [currentPage, pageSize, sortColumn, sortDirection, token, isInitialLoading]);
+        try {
+            // Combine all non-empty filters into a single object
+            const filterParams = filters.reduce((acc, filter) => {
+                if (filter.value) {
+                    acc[filter.column] = filter.value;
+                }
+                return acc;
+            }, {} as Record<string, string>);
 
+            const response = await flatApi.fetchWithFilter(
+                token,
+                filterParams,
+                currentPage - 1,
+                pageSize,
+                sortColumn,
+                sortDirection
+            );
+            
+            if (response.status === 200) {
+                setFlats(response.data.content);
+                setTotalPages(response.data.totalPages);
+            } else {
+                setToast({
+                    message: response.data.message || "Не удалось получить квартиры",
+                    type: "error"
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching flats:", error);
+            setToast({ message: "Ошибка при загрузке квартир", type: "error" });
+        } finally {
+            setIsLoading(false);
+            setIsInitialLoading(false);
+            setIsPageChanging(false);
+        }
+    }, [token, currentPage, pageSize, sortColumn, sortDirection, filters, isInitialLoading]);
 
     useEffect(() => {
-        fetchFlats();
-    }, [fetchFlats]);
-
+        fetchWithFilter();
+    }, [fetchWithFilter]);
 
     const handleDelete = useCallback(
         async (id: number) => {
             setDeletingMarineId(id);
             try {
-                await deleteFlat(token, id);
+                await flatApi.deleteFlat(token, id);
             } catch (error) {
                 console.error("Error deleting flat:", error);
                 setToast({
-                    message: "Не удал��сь удалить квартиру",
+                    message: "Не удалось удалить кв��ртиру",
                     type: "error",
                 });
             } finally {
@@ -92,37 +106,6 @@ const FlatList: React.FC = () => {
         },
         [token, setToast]
     );
-
-    // Update the filtered and sorted flats logic - remove pagination since it's handled server-side
-    const filteredAndSortedFlats = useMemo(() => {
-        return flats
-            .filter((flat) => {
-                // First filter by "show only mine" if active
-                if (showOnlyMine && flat.user.username !== login) {
-                    return false;
-                }
-                
-                // Then filter by search query if present
-                if (searchQuery) {
-                    const searchLower = searchQuery.toLowerCase();
-                    return (
-                        flat.id.toString().includes(searchLower) ||
-                        flat.name.toLowerCase().includes(searchLower) ||
-                        `${flat.coordinates.x}, ${flat.coordinates.y}`.toLowerCase().includes(searchLower) ||
-                        flat.area.toString().includes(searchLower) ||
-                        flat.price.toString().includes(searchLower) ||
-                        flat.timeToMetroOnFoot.toString().includes(searchLower) ||
-                        flat.numberOfRooms.toString().includes(searchLower) ||
-                        flat.numberOfBathrooms.toString().includes(searchLower) ||
-                        flat.timeToMetroByTransport.toString().includes(searchLower) ||
-                        flat.view.toLowerCase().includes(searchLower) ||
-                        (flat.house?.name || "").toLowerCase().includes(searchLower) ||
-                        flat.user.username.toLowerCase().includes(searchLower)
-                    );
-                }
-                return true;
-            });
-    }, [flats, showOnlyMine, login, searchQuery]);
 
     const [isPopUpOpen, setIsPopUpOpen] = useState(false);
     const [selectedFlatId, setSelectedFlatId] = useState<number | null>(null);
@@ -176,7 +159,7 @@ const FlatList: React.FC = () => {
                 throw new Error("Количество комнат должно быть между 1 и 7");
             }
             if (flatDTO.numberOfBathrooms <= 0) {
-                throw new Error("Количество ванных комнат должно быть больше 0");
+                throw new Error("Количество ванных комнат должно быт�� больше 0");
             }
             if (flatDTO.timeToMetroByTransport <= 0) {
                 throw new Error("Время до метро на транспорте должно быть больше 0");
@@ -190,7 +173,7 @@ const FlatList: React.FC = () => {
 
             // If we've made it this far, all validations have passed
             if (selectedFlatId) {
-                const response = await updateFlat(token, selectedFlatId, flatDTO);
+                const response = await flatApi.updateFlat(token, selectedFlatId, flatDTO);
                 if (response.status !== 200) {
                     setToast({
                         message: response.data.message || "Не удалось обновить квартиру",
@@ -204,7 +187,7 @@ const FlatList: React.FC = () => {
                     });
                 }
             } else {
-                const response = await createFlat(token, flatDTO);
+                const response = await flatApi.createFlat(token, flatDTO);
                 if (response.status !== 200) {
                     setToast({
                         message: response.data.message || "Не удалось создать квартиру",
@@ -233,20 +216,27 @@ const FlatList: React.FC = () => {
 
     // WebSocket handlers
     const handleFlatUpdate = useCallback((updatedFlat: Flat) => {
-        setFlats(prevFlats =>
-            prevFlats.map(flat =>
-                flat.id === updatedFlat.id ? updatedFlat : flat
-            )
-        );
-    }, [setToast]);
+        setFlats(prevFlats => {
+            const flatExists = prevFlats.some(flat => flat.id === updatedFlat.id);
+            if (flatExists) {
+                return prevFlats.map(flat =>
+                    flat.id === updatedFlat.id ? updatedFlat : flat
+                );
+            } else {
+                fetchWithFilter();
+                return prevFlats;
+            }
+        });
+        setToast({ message: "Квартира обновлена", type: "success" });
+    }, [fetchWithFilter]);
 
-    const handleFlatCreate = useCallback((_: Flat) => {
-        fetchFlats();
-    }, [fetchFlats]);
+    const handleFlatCreate = useCallback(() => {
+        fetchWithFilter();
+    }, [fetchWithFilter]);
 
-    const handleFlatDelete = useCallback((_: number) => {
-        fetchFlats();
-    }, [fetchFlats]);
+    const handleFlatDelete = useCallback(() => {
+        fetchWithFilter();
+    }, [fetchWithFilter]);
 
     // Initialize WebSocket connection
     useEffect(() => {
@@ -267,7 +257,7 @@ const FlatList: React.FC = () => {
 
     // Update table rows rendering
     const tableRows = useMemo(() => {
-        return filteredAndSortedFlats.map((flat) => (
+        return flats.map((flat) => (
             <tr key={flat.id} className="border-b border-gray-200 hover:bg-gray-100 text-center h-16">
                 <td className="p-3">{flat.id}</td>
                 <td className="p-3">{flat.name}</td>
@@ -294,7 +284,7 @@ const FlatList: React.FC = () => {
                                     onClick={() => handleEdit(flat.id)}
                                     disabled={isSaving || deletingMarineId === flat.id}
                                     className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-md transition-colors duration-300"
-                                    title="Редактировать"
+                                    title="Редактирова��ь"
                                 >
                                     <FaEdit size={16} />
                                 </button>
@@ -312,15 +302,7 @@ const FlatList: React.FC = () => {
                 </td>
             </tr>
         ));
-    }, [
-        filteredAndSortedFlats,
-        isAdmin,
-        login,
-        isSaving,
-        deletingMarineId,
-        handleEdit,
-        handleDelete,
-    ]);
+    }, [flats, isAdmin, login, isSaving, deletingMarineId, handleEdit, handleDelete]);
 
     // Add handleSort function
     const handleSort = useCallback((column: string) => {
@@ -333,55 +315,130 @@ const FlatList: React.FC = () => {
         }
     }, [sortColumn]);
 
-    // Add search handler
-    const handleSearch = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    }, []);
+    // Add handler for filter changes
+    const handleFilterChange = (index: number, field: 'column' | 'value', newValue: string) => {
+        setFilters(prevFilters => {
+            const newFilters = [...prevFilters];
+            newFilters[index] = {
+                ...newFilters[index],
+                [field]: newValue
+            };
+            return newFilters;
+        });
+    };
+
+    // Add handler to add new filter
+    const addFilter = () => {
+        setFilters(prev => {
+            // Check if all columns are already used
+            const existingColumns = new Set(prev.map(f => f.column));
+            const allColumns = ["id", "name", "area", "price", "numberOfRooms", "numberOfBathrooms", "view", "username"];
+            const availableColumns = allColumns.filter(col => !existingColumns.has(col));
+            
+            if (availableColumns.length === 0) {
+                setToast({
+                    message: "Все возможные фильтры уже добавлены",
+                    type: "error"
+                });
+                return prev;
+            }
+            
+            return [...prev, { column: availableColumns[0], value: "" }];
+        });
+    };
+
+    // Add handler to remove filter
+    const removeFilter = (index: number) => {
+        setFilters(prev => prev.filter((_, i) => i !== index));
+    };
 
     return (
-        <div className="min-h-screen flex flex-col items-center p-4 relative font-sans">
-            <div className="w-full max-w-8xl space-y-6">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-center">
-                    Список квартир
-                </h1>
+        <div className="h-[calc(100vh-120px)] flex flex-col p-4 font-sans">
+            {/* Header */}
+            <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+                Список квартир
+            </h1>
 
-                <div className="bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 space-y-6">
-                    <div className="flex items-center space-x-4">
-                        <input
-                            type="text"
-                            placeholder="Поиск по всем полям..."
-                            value={searchQuery}
-                            onChange={handleSearch}
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300"
-                        />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <label className="relative inline-flex items-center cursor-pointer">
+            {/* Main Container */}
+            <div className="flex-1 bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 flex flex-col gap-4">
+                {/* Filters Section - Fixed height */}
+                <div className="h-[120px] border border-gray-200 rounded-lg p-4 overflow-y-auto">
+                    {filters.map((filter, index) => (
+                        <div key={index} className="flex items-center space-x-4 mb-2">
+                            <select
+                                value={filter.column}
+                                onChange={(e) => handleFilterChange(index, 'column', e.target.value)}
+                                className="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300"
+                            >
+                                {["id", "name", "area", "price", "numberOfRooms", "numberOfBathrooms", "view", "username"]
+                                    .filter(col => col === filter.column || !filters.some(f => f.column === col))
+                                    .map(col => (
+                                        <option key={col} value={col}>
+                                            {col === "id" ? "ID" :
+                                             col === "name" ? "Название" :
+                                             col === "area" ? "Площадь" :
+                                             col === "price" ? "Цена" :
+                                             col === "numberOfRooms" ? "Количество комнат" :
+                                             col === "numberOfBathrooms" ? "Количество ванных" :
+                                             col === "view" ? "Вид" :
+                                             "Пользователь"}
+                                        </option>
+                                    ))}
+                            </select>
                             <input
-                                type="checkbox"
-                                checked={showOnlyMine}
-                                onChange={(e) => setShowOnlyMine(e.target.checked)}
-                                className="sr-only peer"
+                                type="text"
+                                placeholder={`Поиск по ${filter.column}...`}
+                                value={filter.value}
+                                onChange={(e) => handleFilterChange(index, 'value', e.target.value)}
+                                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300"
                             />
-                            <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span className="ml-3 text-sm font-medium text-gray-600">
-                                Показать только мои
-                            </span>
-                        </label>
+                            {filters.length > 1 && (
+                                <button
+                                    onClick={() => removeFilter(index)}
+                                    className="text-red-600 hover:text-red-800"
+                                >
+                                    Удалить
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                    <button
+                        onClick={addFilter}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        + Добавить фильтр
+                    </button>
+                </div>
 
-                        <button
-                            onClick={() => {
-                                setSelectedFlatId(null);
-                                setIsPopUpOpen(true);
-                            }}
-                            className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
-                        >
-                            Добавить новую квартиру
-                        </button>
-                    </div>
+                {/* Controls Section */}
+                <div className="flex items-center justify-between">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={showOnlyMine}
+                            onChange={(e) => setShowOnlyMine(e.target.checked)}
+                            className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span className="ml-3 text-sm font-medium text-gray-600">
+                            Показать только мои
+                        </span>
+                    </label>
 
-                    <div className="overflow-x-auto rounded-lg border border-gray-200">
+                    <button
+                        onClick={() => {
+                            setSelectedFlatId(null);
+                            setIsPopUpOpen(true);
+                        }}
+                        className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+                    >
+                        Добавить новую квартиру
+                    </button>
+                </div>
+
+                {/* Table Section - Fills remaining space */}
+                <div className="flex-1 overflow-hidden flex flex-col">
+                    <div className="flex-1 overflow-auto rounded-lg border border-gray-200">
                         {isLoading ? (
                             <Loading />
                         ) : (
@@ -474,7 +531,7 @@ const FlatList: React.FC = () => {
                                                     onClick={() => handleSort("numberOfBathrooms")}
                                                     className="cursor-pointer hover:text-blue-600 text-gray-600 font-medium w-48 flex items-center justify-center"
                                                 >
-                                                    Количество ванных комнат {sortColumn === "numberOfBathrooms" && (sortDirection === "asc" ? "↑" : "↓")}
+                                                    Количество ванных комнат {sortColumn === "numberOfBathrooms" && (sortDirection === "asc" ? "���" : "↓")}
                                                 </span>
                                             </div>
                                         </th>
@@ -528,7 +585,8 @@ const FlatList: React.FC = () => {
                         )}
                     </div>
 
-                    <div className="flex justify-center mt-4">
+                    {/* Pagination - Fixed at bottom */}
+                    <div className="mt-4 flex justify-center">
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
@@ -538,6 +596,7 @@ const FlatList: React.FC = () => {
                 </div>
             </div>
 
+            {/* Popups and Toasts */}
             <PopUpWindow isOpen={isPopUpOpen} onClose={() => {
                 setIsPopUpOpen(false);
                 setFlatToEdit(null);
@@ -574,8 +633,6 @@ const FlatList: React.FC = () => {
                     onClose={() => setToast(null)}
                 />
             )}
-
-            {isPageChanging}
         </div>
     );
 };

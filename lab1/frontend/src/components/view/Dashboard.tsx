@@ -18,8 +18,6 @@ const Dashboard = () => {
     nameSubstring: "",
     id1: "",
     id2: "",
-    X: 0,
-    Y: 0,
   });
   const [popupContent, setPopupContent] = React.useState<string | null>(null);
   const [toast, setToast] = React.useState<{
@@ -59,11 +57,18 @@ const Dashboard = () => {
           }
           break;
         case "findByNamePrefix":
+          if (!specialOperations.nameSubstring?.trim()) {
+            setToast({
+              message: "Пожалуйста, введите префикс для поиска",
+              type: "warning"
+            });
+            return;
+          }
           response = await dashboardApi.findByNamePrefix(token, specialOperations.nameSubstring);
           if (response.status === 200) {
             if (response.data.length > 0) {
               const flatsList: Flat[] = response.data
-                .map((flat: Flat, index: number) => 
+                .map((flat: Flat, index: number) =>
                   `${index + 1}. ${flat.name}\n`
                 )
                 .join('\n\n');
@@ -77,6 +82,13 @@ const Dashboard = () => {
           }
           break;
         case "comparePrices":
+          if (!specialOperations.id1 || !specialOperations.id2) {
+            setToast({
+              message: "Пожалуйста, введите ID обеих квартир",
+              type: "warning"
+            });
+            return;
+          }
           response = await dashboardApi.comparePrices(token, specialOperations.id1, specialOperations.id2);
           if (response.status === 200) {
             const cheaperFlat: Flat = response.data;
@@ -88,11 +100,11 @@ const Dashboard = () => {
           }
           break;
         case "sortByMetroTime":
-          response = await dashboardApi.sortByMetroTime(token, specialOperations.X, specialOperations.Y);
+          response = await dashboardApi.sortByMetroTime(token);
           if (response.status === 200) {
             const sortedList: Flat[] = response.data
-              .map((flat: Flat, index: number) => 
-                `${index + 1}. ${flat.name}\n  🕒 ${flat.timeToMetroByTransport} минут до метро`
+              .map((flat: Flat, index: number) =>
+                `${index + 1}. ${flat.name}\n  🕒 ${flat.timeToMetroOnFoot} минут до метро пешком`
               )
               .join('\n\n');
             setPopupContent(
@@ -173,18 +185,6 @@ const Dashboard = () => {
             icon={<RiSubwayLine className="text-purple-500 text-2xl" />}
             title="Сортировка по метро"
             description="Сортировать квартиры по времени до метро"
-            input={{
-              value: specialOperations.X.toString(),
-              onChange: (value) => setSpecialOperations(prev => ({ ...prev, X: parseFloat(value) || 0 })),
-              placeholder: "X координата метро",
-              type: "number"
-            }}
-            secondInput={{
-              value: specialOperations.Y.toString(),
-              onChange: (value) => setSpecialOperations(prev => ({ ...prev, Y: parseFloat(value) || 0 })),
-              placeholder: "Y координата метро",
-              type: "number"
-            }}
             onExecute={() => handleSpecialOperation("sortByMetroTime")}
           />
         </div>
@@ -236,7 +236,7 @@ const OperationCard: React.FC<OperationCardProps> = ({
         <p className="text-sm text-gray-500">{description}</p>
       </div>
     </div>
-    
+
     {input && (
       <input
         type={input.type || "text"}
@@ -246,7 +246,7 @@ const OperationCard: React.FC<OperationCardProps> = ({
         className="w-full px-4 py-2 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       />
     )}
-    
+
     {secondInput && (
       <input
         type={secondInput.type || "text"}

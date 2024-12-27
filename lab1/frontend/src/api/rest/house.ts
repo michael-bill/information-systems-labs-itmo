@@ -140,3 +140,22 @@ export const deleteHouse = async (token: string, houseId: number) => {
     };
   }
 };
+
+export const fetchWithFilter = async (
+  token: string,
+  filterParams: Record<string, any>,
+  page: number,
+  size: number,
+  sortColumn: string,
+  sortDirection: string
+) => {
+  return await axios.post(
+    `${BASE_URL}/get-by-filter?page=${page}&size=${size}&sort=${sortColumn},${sortDirection}`,
+    filterParams,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};

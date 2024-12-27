@@ -10,6 +10,7 @@ import HouseForm from "./HouseForm";
 import { Pagination } from "./Pagination";
 import Loading from "./Loading";
 import { createHouseWebSocket } from "../api/ws/houseWS";
+import Filter from "../types/Filter";
 
 const HouseList = () => {
   const [houses, setHouses] = useState<House[]>([]);
@@ -31,64 +32,85 @@ const HouseList = () => {
   const [sortColumn, setSortColumn] = useState<string>("id");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  // Add search state
-  const [searchQuery, setSearchQuery] = useState("");
+  // Replace the single filter state with filters array
+  const [filters, setFilters] = useState<Filter[]>([{ column: "id", value: "" }]);
 
-  const fetchHouses = useCallback(async () => {
+  const handleFilterChange = (index: number, field: 'column' | 'value', newValue: string) => {
+    setFilters(prevFilters => {
+        const newFilters = [...prevFilters];
+        newFilters[index] = {
+            ...newFilters[index],
+            [field]: newValue
+        };
+        return newFilters;
+    });
+  };
+
+  const addFilter = () => {
+    setFilters(prev => {
+        const existingColumns = new Set(prev.map(f => f.column));
+        const allColumns = ["id", "name", "year", "username"];
+        const availableColumns = allColumns.filter(col => !existingColumns.has(col));
+        
+        if (availableColumns.length === 0) {
+            setToast({
+                message: "Все возможные фильтры уже добавлены",
+                type: "error"
+            });
+            return prev;
+        }
+        
+        return [...prev, { column: availableColumns[0], value: "" }];
+    });
+  };
+
+  const removeFilter = (index: number) => {
+    setFilters(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Update fetchWithFilter to handle multiple filters
+  const fetchWithFilter = useCallback(async () => {
     setIsPageChanging(true);
     try {
-      const response = await houseApi.fetchWithPagination(
-        token,
-        currentPage - 1,
-        pageSize,
-        sortColumn,
-        sortDirection
-      );
-      if (response.status === 200) {
-        const { data } = response;
-        setHouses(data.content);
-        setTotalPages(data.totalPages);
-      } else {
-        setToast({
-          message: response.data.message || "Не удалось получить дома",
-          type: "error"
-        });
-      }
+        // Combine all non-empty filters into a single object
+        const filterParams = filters.reduce((acc, filter) => {
+            if (filter.value) {
+                acc[filter.column] = filter.value;
+            }
+            return acc;
+        }, {} as Record<string, string>);
+
+        const response = await houseApi.fetchWithFilter(
+            token,
+            filterParams,
+            currentPage - 1,
+            pageSize,
+            sortColumn,
+            sortDirection
+        );
+        
+        if (response.status === 200) {
+            const { data } = response;
+            setHouses(data.content);
+            setTotalPages(data.totalPages);
+        } else {
+            setToast({
+                message: response.data.message || "Не удалось получить дома",
+                type: "error"
+            });
+        }
     } catch (error) {
-      console.error("Error fetching houses:", error);
-      setToast({ message: "Ошибка при загрузке домов", type: "error" });
+        console.error("Error fetching houses:", error);
+        setToast({ message: "Ошибка при загрузке домов", type: "error" });
     } finally {
-      setIsLoading(false);
-      setIsPageChanging(false);
+        setIsLoading(false);
+        setIsPageChanging(false);
     }
-  }, [token, pageSize, currentPage, sortColumn, sortDirection]);
+  }, [token, pageSize, currentPage, sortColumn, sortDirection, filters]);
 
   useEffect(() => {
-    fetchHouses();
-  }, [fetchHouses]);
-
-  const filteredAndSortedHouses = useMemo(() => {
-    return houses
-      .filter((house) => {
-        // First filter by "show only mine" if active
-        if (showOnlyMine && house.user.username !== login) {
-          return false;
-        }
-
-        // Then filter by search query if present
-        if (searchQuery) {
-          const searchLower = searchQuery.toLowerCase();
-          return (
-            house.id.toString().includes(searchLower) ||
-            house.name.toLowerCase().includes(searchLower) ||
-            house.year.toString().includes(searchLower) ||
-            house.numberOfFlatsOnFloor.toString().includes(searchLower) ||
-            house.user.username.toLowerCase().includes(searchLower)
-          );
-        }
-        return true;
-      });
-  }, [houses, showOnlyMine, login, searchQuery]);
+    fetchWithFilter();
+  }, [fetchWithFilter]);
 
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
 
@@ -106,21 +128,27 @@ const HouseList = () => {
 
   // WebSocket handlers
   const handleHouseUpdate = useCallback((updatedHouse: House) => {
-    setHouses(prevHouses =>
-      prevHouses.map(house =>
-        house.id === updatedHouse.id ? updatedHouse : house
-      )
-    );
+    setHouses(prevHouses => {
+      const houseExists = prevHouses.some(house => house.id === updatedHouse.id);
+      if (houseExists) {
+        return prevHouses.map(house =>
+          house.id === updatedHouse.id ? updatedHouse : house
+        );
+      } else {
+        fetchWithFilter();
+        return prevHouses;
+      }
+    });
     setToast({ message: "Дом обновлен", type: "success" });
-  }, []);
+  }, [fetchWithFilter]);
 
-  const handleHouseCreate = useCallback((_: House) => {
-    fetchHouses();
-  }, [fetchHouses]);
+  const handleHouseCreate = useCallback(() => {
+    fetchWithFilter();
+  }, [fetchWithFilter]);
 
-  const handleHouseDelete = useCallback((_: number) => {
-    fetchHouses();
-  }, [fetchHouses]);
+  const handleHouseDelete = useCallback(() => {
+    fetchWithFilter();
+  }, [fetchWithFilter]);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -192,6 +220,7 @@ const HouseList = () => {
           });
         }
         setIsPopUpOpen(false);
+        fetchWithFilter();
       } catch (error) {
         setToast({
           message: "Произошла ошибка при сохранении",
@@ -199,7 +228,7 @@ const HouseList = () => {
         });
       }
     },
-    [token]
+    [token, fetchWithFilter]
   );
 
   const handleDelete = useCallback(
@@ -216,8 +245,9 @@ const HouseList = () => {
         message: "Дом удален",
         type: "success"
       });
+      fetchWithFilter();
     },
-    [token]
+    [token, fetchWithFilter]
   );
 
   const handleSort = useCallback((column: string) => {
@@ -230,56 +260,85 @@ const HouseList = () => {
     }
   }, [sortColumn]);
 
-  // Add search handler
-  const handleSearch = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  }, []);
-
   return (
-    <div className="min-h-screen flex flex-col items-center p-4 relative font-sans">
-      <div className="w-full max-w-8xl space-y-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-center">
-          Список домов
-        </h1>
+    <div className="h-[calc(100vh-120px)] flex flex-col p-4 font-sans">
+      <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+        Список домов
+      </h1>
 
-        <div className="bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 space-y-6">
-          <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              placeholder="Поиск по всем полям..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300"
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <label className="relative inline-flex items-center cursor-pointer">
+      <div className="flex-1 bg-gray-50 rounded-xl shadow-lg border border-gray-200 p-6 flex flex-col gap-4">
+        <div className="h-[120px] border border-gray-200 rounded-lg p-4 overflow-y-auto">
+          {filters.map((filter, index) => (
+            <div key={index} className="flex items-center space-x-4 mb-2">
+              <select
+                value={filter.column}
+                onChange={(e) => handleFilterChange(index, 'column', e.target.value)}
+                className="px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300"
+              >
+                {["id", "name", "year", "username"]
+                  .filter(col => col === filter.column || !filters.some(f => f.column === col))
+                  .map(col => (
+                    <option key={col} value={col}>
+                      {col === "id" ? "ID" :
+                       col === "name" ? "Название" :
+                       col === "year" ? "Год постройки" :
+                       "Пользователь"}
+                    </option>
+                  ))}
+              </select>
               <input
-                type="checkbox"
-                checked={showOnlyMine}
-                onChange={(e) => setShowOnlyMine(e.target.checked)}
-                className="sr-only peer"
+                type="text"
+                placeholder={`Поиск по ${filter.column}...`}
+                value={filter.value}
+                onChange={(e) => handleFilterChange(index, 'value', e.target.value)}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors duration-300"
               />
-              <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              <span className="ml-3 text-sm font-medium text-gray-600">
-                Показать только мои
-              </span>
-            </label>
+              {filters.length > 1 && (
+                <button
+                  onClick={() => removeFilter(index)}
+                  className="text-red-600 hover:text-red-800"
+                >
+                  Удалить
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={addFilter}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            + Добавить фильтр
+          </button>
+        </div>
 
-            <button
-              onClick={() => {
-                setSelectedHouseId(null);
-                setHouseToEdit(null);
-                setIsPopUpOpen(true);
-              }}
-              className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
-            >
-              Добавить новый дом
-            </button>
-          </div>
+        <div className="flex items-center justify-between">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showOnlyMine}
+              onChange={(e) => setShowOnlyMine(e.target.checked)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            <span className="ml-3 text-sm font-medium text-gray-600">
+              Показать только мои
+            </span>
+          </label>
 
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <button
+            onClick={() => {
+              setSelectedHouseId(null);
+              setHouseToEdit(null);
+              setIsPopUpOpen(true);
+            }}
+            className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+          >
+            Добавить новый дом
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-auto rounded-lg border border-gray-200">
             {isLoading ? (
               <Loading />
             ) : (
@@ -327,7 +386,7 @@ const HouseList = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {filteredAndSortedHouses.map((ch) => (
+                  {houses.map((ch) => (
                     <tr
                       key={ch.id}
                       className="border-b border-gray-200 hover:bg-gray-100 text-center h-16"
@@ -365,7 +424,7 @@ const HouseList = () => {
             )}
           </div>
 
-          <div className="flex justify-center mt-4">
+          <div className="mt-4 flex justify-center">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -379,7 +438,7 @@ const HouseList = () => {
         <HouseForm
           id={selectedHouseId}
           setHouseToEdit={setHouseToEdit}
-          initialHouse={houseToEdit} // Pass houseToEdit as initialHouse
+          initialHouse={houseToEdit}
         />
         <div className="flex justify-end space-x-4 mt-4 w-full">
           <button
@@ -405,6 +464,7 @@ const HouseList = () => {
           </button>
         </div>
       </PopUpWindow>
+
       {toast && (
         <Toast
           message={toast.message}
@@ -412,7 +472,6 @@ const HouseList = () => {
           onClose={() => setToast(null)}
         />
       )}
-      {isPageChanging}
     </div>
   );
 };
