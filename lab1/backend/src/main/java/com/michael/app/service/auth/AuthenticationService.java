@@ -5,6 +5,8 @@ import com.michael.app.dto.auth.SignInDto;
 import com.michael.app.dto.auth.SignUpDto;
 import com.michael.app.entity.User;
 import com.michael.app.service.UserService;
+
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +20,16 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+
+    @PostConstruct
+    public void init() {
+        if (userService.getAdminCount() == 0) {
+            userService.create(User.builder().username("admin")
+                    .password(passwordEncoder.encode("admin"))
+                    .role(User.Role.ROLE_ADMIN)
+                    .build());
+        }
+    }
 
     public JwtAuthenticationDto signUp(SignUpDto request) {
 
@@ -36,8 +48,7 @@ public class AuthenticationService {
     public JwtAuthenticationDto signIn(SignInDto request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
-                request.getPassword()
-        ));
+                request.getPassword()));
 
         var user = userService
                 .userDetailsService()

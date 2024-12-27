@@ -1,7 +1,5 @@
 package com.michael.app.repository;
 
-import java.util.Optional;
-
 import com.michael.app.entity.AdminCreationRequest;
 import com.michael.app.entity.User;
 import org.springframework.data.domain.Page;

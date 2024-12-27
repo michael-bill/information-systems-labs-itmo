@@ -22,6 +22,7 @@ import java.util.Map;
 public class HouseService {
 
     private final HouseRepository houseRepository;
+    private final FlatService flatService;
     private final NotificationService notificationService;
 
     public House create(HouseDto houseDto, User user) {
@@ -36,11 +37,16 @@ public class HouseService {
         if (!hasRulesForUpdateHouse(houseToUpdate, user))
             throw new NoRulesException("У вас не прав на редактирование объекта House, " +
                     "так как вы не его владелец или пользователь запретил его редактировать");
-        House updatedHouse = HouseDto.convertFromDto(houseDto);
-        updatedHouse.setId(id);
-        updatedHouse = houseRepository.save(updatedHouse);
-        notificationService.notifyAboutChange(updatedHouse);
-        return updatedHouse;
+
+        House house = houseRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
+        house.setName(houseDto.getName());
+        house.setYear(houseDto.getYear());
+        house.setNumberOfFlatsOnFloor(houseDto.getNumberOfFlatsOnFloor());
+        house.setEditable(houseDto.getEditable());
+        houseRepository.save(house);
+        notificationService.notifyAboutChange(house);
+        return house;
     }
 
     public void deleteById(Long id, User user) {
@@ -49,6 +55,8 @@ public class HouseService {
         if (!hasRulesForDeleteHouse(houseToDelete, user))
             throw new NoRulesException("У вас не прав на удаление объекта House, так как вы не его владелец, " +
                     "или вы не владелец всех Flats, что с ним связаны, или пользователь запретил его удалять");
+
+        flatService.deleteByHouseId(id);
         houseRepository.deleteById(id);
         notificationService.notifyAboutDeleteHouse(id);
     }
@@ -70,9 +78,9 @@ public class HouseService {
                     String valueAsString = value.toString();
                     predicates.add(criteriaBuilder.like(
                             criteriaBuilder.lower(root.get(key).as(String.class)),
-                            "%" + valueAsString.toLowerCase() + "%")
-                    );
-                } catch (Exception ignored) { }
+                            "%" + valueAsString.toLowerCase() + "%"));
+                } catch (Exception ignored) {
+                }
             });
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
@@ -86,14 +94,15 @@ public class HouseService {
     }
 
     private boolean hasRulesForUpdateHouse(House house, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN && house.getEditable()) return true;
+        if (user.getRole() == User.Role.ROLE_ADMIN)
+            return true;
         return house.getUser().getId().equals(user.getId());
     }
 
     private boolean hasRulesForDeleteHouse(House house, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN && house.getEditable()) return true;
-        return
-                house.getUser().getId().equals(user.getId()) &&
+        if (user.getRole() == User.Role.ROLE_ADMIN && house.getEditable())
+            return true;
+        return house.getUser().getId().equals(user.getId()) &&
                 house.getFlats().stream().allMatch(flat -> flat.getUser().getId().equals(user.getId()));
     }
 }

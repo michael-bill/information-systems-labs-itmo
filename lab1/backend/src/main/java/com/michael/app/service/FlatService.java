@@ -7,12 +7,15 @@ import com.michael.app.entity.User;
 import com.michael.app.exception.NoRulesException;
 import com.michael.app.repository.FlatRepository;
 import com.michael.app.repository.HouseRepository;
+
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +45,8 @@ public class FlatService {
                     "так как вы не его владелец или пользователь запретил его редактировать");
         House houseToUpdate = houseRepository.findById(flatDto.getHouseId())
                 .orElseThrow(() -> new IllegalArgumentException("House с таким id не существует"));
-        Flat updatedFlat = FlatDto.convertFromDto(flatDto, houseToUpdate, user);
+        User originalUser = flatToUpdate.getUser();
+        Flat updatedFlat = FlatDto.convertFromDto(flatDto, houseToUpdate, originalUser);
         updatedFlat.setId(id);
         updatedFlat = flatRepository.save(updatedFlat);
         notificationService.notifyAboutChange(updatedFlat);
@@ -64,6 +68,7 @@ public class FlatService {
                 .orElseThrow(() -> new IllegalArgumentException("Flat с таким id не существует"));
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Page<Flat> getAll(Pageable pageable) {
         return flatRepository.findAll(pageable);
     }
@@ -110,7 +115,21 @@ public class FlatService {
     }
 
     private boolean hasRulesForFlat(Flat flat, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN && flat.getEditable()) return true;
-        return flat.getUser().getId().equals(user.getId());
+        return user.getRole() == User.Role.ROLE_ADMIN || flat.getUser().getId().equals(user.getId());
+    }
+
+    public void deleteByHouseId(Long houseId) {
+        if (!houseRepository.existsById(houseId)) {
+            throw new IllegalArgumentException("House с таким id не существует");
+        }
+        List<Flat> flats = flatRepository.findByHouseId(houseId);
+        boolean isDeleted = false;
+        for (Flat flat : flats) {
+            flatRepository.delete(flat);
+            isDeleted = true;
+        }
+        if (isDeleted) {
+            notificationService.notifyAboutDeleteFlat(flats.get(0).getId());
+        }
     }
 }

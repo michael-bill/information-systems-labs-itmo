@@ -2,7 +2,6 @@ package com.michael.app.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

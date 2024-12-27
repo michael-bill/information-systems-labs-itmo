@@ -1,5 +1,6 @@
 package com.michael.app.service;
 
+import com.michael.app.entity.AdminCreationRequest;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.House;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,13 @@ public class NotificationService {
 
     public void notifyAboutDeleteHouse(Long houseId) {
         messagingTemplate.convertAndSend("/topic/deletes/house", houseId);
+    }
+
+    public void notifyAboutUpdateRequestStatus(AdminCreationRequest adminCreationRequest) {
+        messagingTemplate.convertAndSend("/topic/updates/admin-creation-request", adminCreationRequest);
+    }
+
+    public void notifyAboutCreateRequest(AdminCreationRequest adminCreationRequest) {
+        messagingTemplate.convertAndSend("/topic/creates/admin-creation-request", adminCreationRequest);
     }
 }

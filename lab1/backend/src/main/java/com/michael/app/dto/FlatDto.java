@@ -39,7 +39,6 @@ public class FlatDto {
                 .timeToMetroByTransport(flatDto.getTimeToMetroByTransport())
                 .view(flatDto.getView())
                 .house(house)
-                .editable(flatDto.getEditable())
                 .build();
     }
 

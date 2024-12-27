@@ -44,7 +44,7 @@ public class AdminCreationController {
         return adminCreationService.getAll(pageable);
     }
 
-    @GetMapping("get-my-requests")
+    @GetMapping("/get-my-requests")
     @Operation(summary = "Получить мои заявки")
     public Page<AdminCreationRequest> getMyRequests(
             @Parameter(description = "Номер страницы (начинается с 0)")
@@ -79,7 +79,7 @@ public class AdminCreationController {
         adminCreationService.createRequest(user);
     }
 
-    @GetMapping("approve-request")
+    @GetMapping("/approve-request")
     @Operation(summary = "Одобрить запрос на создание админа")
     public void approveRequest(
             @AuthenticationPrincipal User user,
@@ -88,7 +88,7 @@ public class AdminCreationController {
         adminCreationService.approveRequest(user, requestId);
     }
 
-    @GetMapping("reject-request")
+    @GetMapping("/reject-request")
     @Operation(summary = "Отклонить запрос на создание админа")
     public void rejectRequest(
             @AuthenticationPrincipal User user,

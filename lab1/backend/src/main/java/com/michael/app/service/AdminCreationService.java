@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AdminCreationService {
 
+    private final NotificationService notificationService;
     private final AdminCreationRequestRepository adminCreationRequestRepository;
     private final UserService userService;
 
@@ -31,11 +32,21 @@ public class AdminCreationService {
     }
 
     public void createRequest(User user) {
+        var existingRequest = adminCreationRequestRepository.findAllByUser(user, Pageable.unpaged())
+                .stream()
+                .filter(r -> r.getStatus() == AdminCreationRequest.Status.SENT)
+                .findFirst();
+
+        if (existingRequest.isPresent()) {
+            throw new IllegalArgumentException("Вы уже отправили заявку на получение прав администратора");
+        }
+
         var request = AdminCreationRequest.builder()
                 .user(user)
                 .status(AdminCreationRequest.Status.SENT)
                 .build();
         var requestWithId = adminCreationRequestRepository.save(request);
+        notificationService.notifyAboutCreateRequest(requestWithId);
         if (userService.getAdminCount() == 0) {
             user.setRole(User.Role.ROLE_ADMIN);
             approveRequest(user, requestWithId.getId());
@@ -55,6 +66,7 @@ public class AdminCreationService {
         User user = request.getUser();
         user.setRole(User.Role.ROLE_ADMIN);
         userService.save(user);
+        notificationService.notifyAboutUpdateRequestStatus(request);
     }
 
     public void rejectRequest(User rejectedBy, Long requestId) {
@@ -66,5 +78,6 @@ public class AdminCreationService {
         request.setStatus(AdminCreationRequest.Status.REJECTED);
         request.setStatusChangedBy(rejectedBy);
         adminCreationRequestRepository.save(request);
+        notificationService.notifyAboutUpdateRequestStatus(request);
     }
 }

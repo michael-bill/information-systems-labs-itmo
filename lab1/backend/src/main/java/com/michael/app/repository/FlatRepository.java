@@ -4,13 +4,17 @@ import java.util.List;
 import java.util.Optional;
 
 import com.michael.app.entity.Flat;
+
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
+    import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 @Repository
+@Transactional(isolation = Isolation.READ_COMMITTED)
 public interface FlatRepository extends JpaRepository<Flat, Long>, JpaSpecificationExecutor<Flat> {
     @Query(value = "select * from get_flat_with_min_number_of_bathrooms_func()", nativeQuery = true)
     Optional<Flat> getFlatWithMinNumberOfBathrooms();
@@ -26,4 +30,6 @@ public interface FlatRepository extends JpaRepository<Flat, Long>, JpaSpecificat
 
     @Query(value = "select * from choose_more_cheaper_flat_by_ids(:id1, :id2)", nativeQuery = true)
     Optional<Flat> chooseMoreCheaperFlatByIds(@Param("id1") Long id1, @Param("id2") Long id2);
+
+    List<Flat> findByHouseId(Long houseId);
 }
