@@ -39,7 +39,7 @@ const FlatList: React.FC = () => {
 
     const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-    const [isPageChanging, setIsPageChanging] = useState(false);
+    const [, setIsPageChanging] = useState(false);
 
     const [filters, setFilters] = useState<Filter[]>([{ column: "id", value: "" }]);
 

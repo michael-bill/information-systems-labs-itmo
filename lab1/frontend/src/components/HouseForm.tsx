@@ -15,7 +15,6 @@ const HouseForm = ({ id, setHouseToEdit, initialHouse }: HouseFormProps) => {
       year: 0,
       numberOfFlatsOnFloor: 0,
       user: { id: 0, username: "" },
-      editable: false,
     }
   );
 

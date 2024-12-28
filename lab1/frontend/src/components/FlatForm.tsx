@@ -26,7 +26,6 @@ const FlatForm = ({ id, initialData, setFlatToEdit }: FlatFormProps) => {
             view: View.STREET,
             houseId: -1,
             creationDate: new Date().toISOString(),
-            editable: true,
         }
     );
 

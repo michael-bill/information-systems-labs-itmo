@@ -6,7 +6,6 @@ type House = {
   year: number;
   numberOfFlatsOnFloor: number;
   user: User;
-  editable: boolean;
 }
 
 export type { House };

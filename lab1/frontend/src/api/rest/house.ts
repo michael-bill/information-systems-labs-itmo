@@ -108,7 +108,6 @@ export const updateHouse = async (token: string, house: House) => {
       name: house.name,
       year: house.year,
       numberOfFlatsOnFloor: house.numberOfFlatsOnFloor,
-      editable: house.editable,
     }, {
       headers: { Authorization: `Bearer ${token}` },
     });

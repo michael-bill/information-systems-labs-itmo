@@ -28,7 +28,7 @@ const HouseList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 4;
-  const [isPageChanging, setIsPageChanging] = useState(false);
+  const [, setIsPageChanging] = useState(false);
   const [sortColumn, setSortColumn] = useState<string>("id");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
