@@ -12,8 +12,8 @@ const HouseForm = ({ id, setHouseToEdit, initialHouse }: HouseFormProps) => {
     initialHouse || {
       id: id || 0,
       name: "",
-      year: 0,
-      numberOfFlatsOnFloor: 0,
+      year: 1,
+      numberOfFlatsOnFloor: 1,
       user: { id: 0, username: "" },
     }
   );
