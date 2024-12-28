@@ -47,8 +47,4 @@ public class House {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @NotNull
-    @Column(name = "is_editable", nullable = false, columnDefinition = "boolean default true")
-    private Boolean editable;
 }

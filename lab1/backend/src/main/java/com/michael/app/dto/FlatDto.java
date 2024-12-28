@@ -23,7 +23,6 @@ public class FlatDto {
     private Double timeToMetroByTransport;
     private Flat.View view;
     private Long houseId;
-    private Boolean editable;
 
     public static Flat convertFromDto(FlatDto flatDto, House house) {
         return Flat.builder()

@@ -43,7 +43,6 @@ public class HouseService {
         house.setName(houseDto.getName());
         house.setYear(houseDto.getYear());
         house.setNumberOfFlatsOnFloor(houseDto.getNumberOfFlatsOnFloor());
-        house.setEditable(houseDto.getEditable());
         houseRepository.save(house);
         notificationService.notifyAboutChange(house);
         return house;
@@ -110,7 +109,7 @@ public class HouseService {
     }
 
     private boolean hasRulesForDeleteHouse(House house, User user) {
-        if (user.getRole() == User.Role.ROLE_ADMIN && house.getEditable())
+        if (user.getRole() == User.Role.ROLE_ADMIN)
             return true;
         return house.getUser().getId().equals(user.getId()) &&
                 house.getFlats().stream().allMatch(flat -> flat.getUser().getId().equals(user.getId()));
