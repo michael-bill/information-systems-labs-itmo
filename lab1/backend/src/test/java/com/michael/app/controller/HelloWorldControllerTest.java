@@ -29,9 +29,9 @@ public class HelloWorldControllerTest {
 
     @Test
     public void testHelloWorld() throws Exception {
-        String username = "John";
-        String password = "my_1secret1_password";
-        User.Role role = User.Role.ROLE_USER;
+        String username = "admin";
+        String password = "admin";
+        User.Role role = User.Role.ROLE_ADMIN;
 
         User userDetails = new User(null, username, password, role);
 
