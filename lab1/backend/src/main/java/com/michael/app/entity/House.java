@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,13 +30,13 @@ public class House {
 
     @Column(name = "year", nullable = false)
     @NotNull(message = "Поле year не может быть пустым")
-    @PositiveOrZero(message = "Поле year должно быть положительным")
+    @Positive(message = "Поле year должно быть больше 0")
     @Max(value = 552, message = "Поле year не может быть больше 552")
     private Long year;
 
     @Column(name = "number_of_flats_on_floor", nullable = false)
     @NotNull(message = "Поле numberOfFlatsOnFloor не может быть пустым")
-    @PositiveOrZero(message = "Поле numberOfFlatsOnFloor должно быть положительным")
+    @Positive(message = "Поле numberOfFlatsOnFloor должно быть больше 0")
     private Long numberOfFlatsOnFloor;
 
     @JsonIgnore

@@ -14,7 +14,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,31 +49,31 @@ public class Flat {
     @Column(name = "creation_date", nullable = false)
     private ZonedDateTime creationDate;
 
-    @PositiveOrZero(message = "Поле area должно быть положительным")
+    @Positive(message = "Поле area должно быть больше 0")
     @Column(name = "area", nullable = false)
     private Float area;
 
-    @PositiveOrZero(message = "Поле price должно быть положительным")
+    @Positive(message = "Поле price должно быть больше 0")
     @Column(name = "price", nullable = false)
     private Float price;
 
     @Column(name = "balcony")
     private Boolean balcony;
 
-    @PositiveOrZero(message = "Поле timeToMetroOnFoot должно быть положительным")
+    @Positive(message = "Поле timeToMetroOnFoot должно быть больше 0")
     @Column(name = "time_to_metro_on_foot")
     private Integer timeToMetroOnFoot;
 
-    @PositiveOrZero(message = "Поле numberOfRooms должно быть положительным")
+    @Positive(message = "Поле numberOfRooms должно быть больше 0")
     @Max(value = 7, message = "Поле numberOfRooms не может быть больше 7")
     @Column(name = "number_of_rooms")
     private Integer numberOfRooms;
 
-    @PositiveOrZero(message = "Поле numberOfBathrooms должно быть положительным")
+    @Positive(message = "Поле numberOfBathrooms должно быть больше 0")
     @Column(name = "number_of_bathrooms")
     private Integer numberOfBathrooms;
 
-    @PositiveOrZero(message = "Поле timeToMetroByTransport должно быть положительным")
+    @Positive(message = "Поле timeToMetroByTransport должно быть больше 0")
     @Column(name = "time_to_metro_by_transport")
     private Double timeToMetroByTransport;
 
