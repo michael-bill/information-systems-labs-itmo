@@ -46,7 +46,7 @@ def generate_flat_data(num_elements):
             "numberOfBathrooms": random.randint(1, 10),
             "timeToMetroByTransport": random.randint(1, 30),
             "view": random.choice(["STREET", "BAD", "NORMAL", "TERRIBLE"]),
-            "houseId": 2229
+            "houseId": 1
         }
         data.append(item)
     return data
