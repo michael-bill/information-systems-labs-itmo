@@ -3,6 +3,7 @@ package com.michael.app.service.core;
 import com.michael.app.entity.AdminCreationRequest;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.House;
+import com.michael.app.entity.UploadFileHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -43,5 +44,9 @@ public class NotificationService {
 
     public void notifyAboutCreateRequest(AdminCreationRequest adminCreationRequest) {
         messagingTemplate.convertAndSend("/topic/creates/admin-creation-request", adminCreationRequest);
+    }
+
+    public void notifyAboutCreateUploadFileHistory(UploadFileHistory uploadFileHistory) {
+        messagingTemplate.convertAndSend("/topic/creates/upload-file-history", uploadFileHistory);
     }
 }

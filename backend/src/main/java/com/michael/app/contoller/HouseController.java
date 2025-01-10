@@ -1,9 +1,9 @@
 package com.michael.app.contoller;
 
 import com.michael.app.dto.HouseDto;
-import com.michael.app.dto.MessageDto;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.House;
+import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.entity.User;
 import com.michael.app.service.core.HouseService;
 import com.michael.app.service.file.HouseUploadFileService;
@@ -20,7 +20,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +115,7 @@ public class HouseController {
 
     @PostMapping(value = "/upload/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Массовая загрузка House из json файла")
-    public MessageDto uploadFromFile(
+    public UploadFileHistory uploadFromFile(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user
     ) {

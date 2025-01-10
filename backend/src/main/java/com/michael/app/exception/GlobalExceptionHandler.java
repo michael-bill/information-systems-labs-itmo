@@ -1,8 +1,11 @@
 package com.michael.app.exception;
 
 import com.michael.app.dto.MessageDto;
+import com.michael.app.entity.UploadFileHistory;
+import com.michael.app.service.file.UploadFileHistoryService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,8 +16,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final UploadFileHistoryService uploadFileHistoryService;
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<MessageDto> handleMyCustomException(MethodArgumentNotValidException ex) {
@@ -39,6 +46,12 @@ public class GlobalExceptionHandler {
                 new MessageDto(Objects.requireNonNull(ex.getMessage())),
                 ex.getStatus()
         );
+    }
+
+    @ExceptionHandler(UploadFileException.class)
+    public ResponseEntity<UploadFileHistory> handleUploadFileException(UploadFileException ex) {
+        uploadFileHistoryService.save(ex.getUploadFileHistory());
+        return new ResponseEntity<>(ex.getUploadFileHistory(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

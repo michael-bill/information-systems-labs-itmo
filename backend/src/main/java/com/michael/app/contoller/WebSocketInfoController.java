@@ -2,6 +2,7 @@ package com.michael.app.contoller;
 
 import com.michael.app.entity.AdminCreationRequest;
 import com.michael.app.entity.Flat;
+import com.michael.app.entity.UploadFileHistory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,6 +59,12 @@ public class WebSocketInfoController {
     @GetMapping("/creates/admin-creation-reques")
     @Operation(summary = "Получить созданный AdminCreationRequest")
     public AdminCreationRequest getAdminCreationRequestCreates() {
+        return null;
+    }
+
+    @GetMapping("/creates/upload-file-history")
+    @Operation(summary = "Получить историю загрузок файлов")
+    public UploadFileHistory getUploadFileHistory() {
         return null;
     }
 }

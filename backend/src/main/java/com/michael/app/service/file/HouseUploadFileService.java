@@ -1,7 +1,7 @@
 package com.michael.app.service.file;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,11 +11,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import com.michael.app.dto.MessageDto;
 import com.michael.app.entity.House;
+import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.entity.User;
 import com.michael.app.exception.UploadFileException;
 import com.michael.app.repository.HouseRepository;
@@ -33,17 +30,27 @@ public class HouseUploadFileService {
 
     private final HouseRepository houseRepository;
     private final NotificationService notificationService;
-
     private final ObjectMapper objectMapper;
-    private final YAMLMapper yamlMapper;
-    private final XmlMapper xmlMapper;
-    private final CsvMapper csvMapper;
+    private final UploadFileHistoryService uploadFileHistoryService;
 
     @Transactional
-    public MessageDto uploadFromJsonFile(User user, MultipartFile file) {
+    public UploadFileHistory uploadFromJsonFile(User user, MultipartFile file) {
+
+        UploadFileHistory failureUploadFileHistory = UploadFileHistory.builder()
+                .fileName(file.getOriginalFilename())
+                .entityName(House.class.getSimpleName())
+                .uploaded(0L)
+                .uploadDate(LocalDateTime.now())
+                .status(UploadFileHistory.Status.FAILURE)
+                .user(user)
+                .build();
+
         if (!Objects.requireNonNull(file.getOriginalFilename()).endsWith(".json")) {
-            throw new IllegalArgumentException("Файл должен быть в формате json");
+            String message = "Файл должен быть в формате json";
+            failureUploadFileHistory.setErrorMessage(message);
+            throw new UploadFileException(message, failureUploadFileHistory);
         }
+
         try (
             InputStream inputStream = file.getInputStream();
             JsonParser jsonParser = objectMapper.getFactory().createParser(inputStream)
@@ -67,25 +74,50 @@ public class HouseUploadFileService {
 
                 if (chunk.size() == chunkSize) {
                     houseRepository.saveAll(chunk);
+                    chunk.forEach(notificationService::notifyAboutCreate);
                     chunk.clear();
                 }
             }
 
             if (!chunk.isEmpty()) {
                 houseRepository.saveAll(chunk);
+                chunk.forEach(notificationService::notifyAboutCreate);
             }
-            return new MessageDto("Успешно загружено " + counter + " объектов");
+
+            UploadFileHistory successUploadFileHistory = UploadFileHistory.builder()
+                    .fileName(file.getOriginalFilename())
+                    .entityName(House.class.getSimpleName())
+                    .uploaded(counter)
+                    .uploadDate(LocalDateTime.now())
+                    .status(UploadFileHistory.Status.SUCCESS)
+                    .user(user)
+                    .build();
+
+            uploadFileHistoryService.save(successUploadFileHistory);
+
+            return successUploadFileHistory;
         } catch (ConstraintViolationException e) {
-            throw new UploadFileException(
-                    "Произошла ошибка при загрузке файла, причина: " +
+
+            String message = "Произошла ошибка при загрузке файла, причина: " +
                     e.getConstraintViolations().stream()
                             .map(ConstraintViolation::getMessage)
-                            .collect(Collectors.joining(", "))
-            );
-        } catch (JsonMappingException e) {
-            throw new UploadFileException("Произошла ошибка при загрузке файла, причина: json файл неверной структуры");
+                            .collect(Collectors.joining(", "));
+
+            failureUploadFileHistory.setErrorMessage(message);
+            throw new UploadFileException(message, failureUploadFileHistory);
+        } catch (JsonMappingException | IllegalArgumentException e) {
+
+            String message = "Произошла ошибка при загрузке файла, причина: " +
+                    "json файл неверной структуры: " + e.getMessage();
+
+            failureUploadFileHistory.setErrorMessage(message);
+            throw new UploadFileException(message, failureUploadFileHistory);
         } catch (Exception e) {
-            throw new UploadFileException("Произошла ошибка при загрузке файла" + e.getMessage());
+
+            String message = "Произошла ошибка при загрузке файла: " + e.getMessage();
+
+            failureUploadFileHistory.setErrorMessage(message);
+            throw new UploadFileException(message, failureUploadFileHistory);
         }
     }
 }

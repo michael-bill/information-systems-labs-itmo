@@ -1,9 +1,13 @@
 package com.michael.app.exception;
 
-import org.springframework.http.HttpStatus;
+import com.michael.app.entity.UploadFileHistory;
+import lombok.Getter;
 
-public class UploadFileException extends MyAppException {
-    public UploadFileException(String message) {
-        super(message, HttpStatus.BAD_REQUEST);
+@Getter
+public class UploadFileException extends RuntimeException {
+    private final UploadFileHistory uploadFileHistory;
+    public UploadFileException(String message, UploadFileHistory ufh) {
+        super(message);
+        this.uploadFileHistory = ufh;
     }
 }

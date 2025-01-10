@@ -1,8 +1,8 @@
 package com.michael.app.contoller;
 
 import com.michael.app.dto.FlatDto;
-import com.michael.app.dto.MessageDto;
 import com.michael.app.entity.Flat;
+import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.entity.User;
 import com.michael.app.service.core.FlatService;
 import com.michael.app.service.file.FlatUploadFileService;
@@ -142,7 +142,7 @@ public class FlatController {
 
     @PostMapping(value = "/upload/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Массовая загрузка Flat из json файла")
-    public MessageDto uploadFromFile(
+    public UploadFileHistory uploadFromFile(
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user
     ) {

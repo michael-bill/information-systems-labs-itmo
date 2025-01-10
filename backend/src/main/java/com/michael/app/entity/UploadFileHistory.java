@@ -12,9 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,40 +23,39 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "admin_creation_request")
-public class AdminCreationRequest {
+@Table(name = "upload_file_history")
+public class UploadFileHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
-    @NotNull
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
-    @NotNull
+    @Column(name = "entity_name", nullable = false)
+    private String entityName;
+
+    @Column(name = "uploaded", nullable = false)
+    private Long uploaded;
+
+    @Column(name = "upload_date", nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime uploadDate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
 
-    @NotNull
-    @Column(name = "created_at")
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime createdAt;
+    @Column(name = "error_message")
+    private String errorMessage;
 
     @ManyToOne
-    @JoinColumn(name = "status_changed_by", nullable = true)
-    private User statusChangedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public enum Status {
-        SENT,
-        APPROVED,
-        REJECTED
+        SUCCESS,
+        FAILURE
     }
 }
