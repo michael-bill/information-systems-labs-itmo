@@ -27,8 +27,7 @@ public class SqlFunctionLoader {
                 "classpath:psql/functions/choose_more_cheaper_flat_by_ids.sql",
                 "classpath:psql/functions/get_flat_with_min_number_of_bathrooms_func.sql",
                 "classpath:psql/functions/get_flat_with_max_coordinates_func.sql",
-                "classpath:psql/functions/get_flats_by_substr_of_name_func.sql",
-                "classpath:psql/functions/get_flats_sorted_by_distance_from_subway.sql"
+                "classpath:psql/functions/get_flats_by_substr_of_name_func.sql"
         };
 
         for (String sqlFile : sqlFiles) {
