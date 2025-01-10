@@ -1,5 +1,6 @@
 package com.michael.app.contoller;
 
+import com.michael.app.entity.AdminCreationRequest;
 import com.michael.app.entity.Flat;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,6 +46,18 @@ public class WebSocketInfoController {
     @GetMapping("/deletes/house")
     @Operation(summary = "Получить id удалённого House")
     public Flat getHouseDeletes() {
+        return null;
+    }
+
+    @GetMapping("/update/admin-creation-request")
+    @Operation(summary = "Получить обновленный AdminCreationRequest")
+    public AdminCreationRequest getAdminCreationRequestUpdates() {
+        return null;
+    }
+
+    @GetMapping("/creates/admin-creation-reques")
+    @Operation(summary = "Получить созданный AdminCreationRequest")
+    public AdminCreationRequest getAdminCreationRequestCreates() {
         return null;
     }
 }
