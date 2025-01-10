@@ -2,7 +2,7 @@ package com.michael.app.contoller;
 
 import com.michael.app.entity.AdminCreationRequest;
 import com.michael.app.entity.User;
-import com.michael.app.service.AdminCreationService;
+import com.michael.app.service.core.AdminCreationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

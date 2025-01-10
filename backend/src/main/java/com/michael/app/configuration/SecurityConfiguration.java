@@ -1,6 +1,6 @@
 package com.michael.app.configuration;
 
-import com.michael.app.service.UserService;
+import com.michael.app.service.core.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

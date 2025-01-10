@@ -1,6 +1,6 @@
 package com.michael.app.configuration;
 
-import com.michael.app.service.UserService;
+import com.michael.app.service.core.UserService;
 import com.michael.app.service.auth.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

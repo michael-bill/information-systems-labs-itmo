@@ -1,10 +1,12 @@
 package com.michael.app.contoller;
 
 import com.michael.app.dto.HouseDto;
+import com.michael.app.dto.MessageDto;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.House;
 import com.michael.app.entity.User;
-import com.michael.app.service.HouseService;
+import com.michael.app.service.core.HouseService;
+import com.michael.app.service.file.HouseUploadFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,9 +15,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +31,7 @@ import java.util.Map;
 public class HouseController {
 
     private final HouseService houseService;
+    private final HouseUploadFileService houseUploadFileService;
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получение House по id")
@@ -106,5 +112,14 @@ public class HouseController {
             @AuthenticationPrincipal User user
     ) {
         houseService.deleteById(id, user);
+    }
+
+    @PostMapping(value = "/upload/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Массовая загрузка House из json файла")
+    public MessageDto uploadFromFile(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user
+    ) {
+        return houseUploadFileService.uploadFromJsonFile(user, file);
     }
 }

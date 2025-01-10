@@ -1,9 +1,11 @@
 package com.michael.app.contoller;
 
 import com.michael.app.dto.FlatDto;
+import com.michael.app.dto.MessageDto;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.User;
-import com.michael.app.service.FlatService;
+import com.michael.app.service.core.FlatService;
+import com.michael.app.service.file.FlatUploadFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,8 +14,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +29,7 @@ import java.util.Map;
 public class FlatController {
 
     private final FlatService flatService;
+    private final FlatUploadFileService flatUploadFileService;
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получение Flat по id")
@@ -133,5 +138,14 @@ public class FlatController {
             @RequestParam("id2") Long id2
     ) {
         return flatService.chooseMoreCheaperFlatByIds(id1, id2);
+    }
+
+    @PostMapping(value = "/upload/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Массовая загрузка Flat из json файла")
+    public MessageDto uploadFromFile(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user
+    ) {
+        return flatUploadFileService.uploadFromJsonFile(user, file);
     }
 }

@@ -4,7 +4,7 @@ import com.michael.app.dto.auth.JwtAuthenticationDto;
 import com.michael.app.dto.auth.SignInDto;
 import com.michael.app.dto.auth.SignUpDto;
 import com.michael.app.entity.User;
-import com.michael.app.service.UserService;
+import com.michael.app.service.core.UserService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

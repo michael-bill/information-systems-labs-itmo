@@ -1,4 +1,4 @@
-package com.michael.app.service;
+package com.michael.app.service.core;
 
 import com.michael.app.dto.HouseDto;
 import com.michael.app.entity.Flat;

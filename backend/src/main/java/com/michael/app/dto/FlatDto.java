@@ -3,12 +3,16 @@ package com.michael.app.dto;
 import com.michael.app.entity.Flat;
 import com.michael.app.entity.House;
 import com.michael.app.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class FlatDto {
     private String name;

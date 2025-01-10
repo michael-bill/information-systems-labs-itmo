@@ -1,4 +1,4 @@
-package com.michael.app.service;
+package com.michael.app.service.core;
 
 import com.michael.app.entity.User;
 import com.michael.app.exception.UniqueValueExistsException;

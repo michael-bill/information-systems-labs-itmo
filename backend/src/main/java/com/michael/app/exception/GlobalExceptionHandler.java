@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,32 +28,22 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<MessageDto> handleMyCustomException(ConstraintViolationException ex) {
         return new ResponseEntity<>(
-                new MessageDto(String.join(", ", ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList())),
+                new MessageDto(ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(", "))),
                 HttpStatus.BAD_REQUEST
         );
     }
 
-    @ExceptionHandler(UniqueValueExistsException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<MessageDto> handleMyCustomException(UniqueValueExistsException ex) {
+    @ExceptionHandler(MyAppException.class)
+    public ResponseEntity<MessageDto> handleMyCustomException(MyAppException ex) {
         return new ResponseEntity<>(
                 new MessageDto(Objects.requireNonNull(ex.getMessage())),
-                HttpStatus.BAD_REQUEST
+                ex.getStatus()
         );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<MessageDto> handleMyCustomException(IllegalArgumentException ex) {
-        return new ResponseEntity<>(
-                new MessageDto(Objects.requireNonNull(ex.getMessage())),
-                HttpStatus.BAD_REQUEST
-        );
-    }
-
-    @ExceptionHandler(NoRulesException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<MessageDto> handleMyCustomException(NoRulesException ex) {
         return new ResponseEntity<>(
                 new MessageDto(Objects.requireNonNull(ex.getMessage())),
                 HttpStatus.BAD_REQUEST

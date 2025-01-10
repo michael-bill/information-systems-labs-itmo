@@ -2,10 +2,14 @@ package com.michael.app.dto;
 
 import com.michael.app.entity.House;
 import com.michael.app.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class HouseDto {
     private String name;
