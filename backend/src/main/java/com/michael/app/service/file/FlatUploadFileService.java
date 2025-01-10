@@ -121,6 +121,11 @@ public class FlatUploadFileService {
 
             String message = "Произошла ошибка при загрузке файла: " + e.getMessage();
 
+            if (e.getMessage().contains("violates foreign key constraint")) {
+                message = "Произошла ошибка при загрузке файла, причина: " +
+                        "неверно указан идентификатор дома";
+            }
+
             failureUploadFileHistory.setErrorMessage(message);
             throw new UploadFileException(message, failureUploadFileHistory);
         }

@@ -30,7 +30,7 @@ public class UploadFileHistory {
     @Column(name = "id", nullable = false, unique = true)
     private Long id;
 
-    @Column(name = "file_name", nullable = false)
+    @Column(name = "file_name", nullable = false, columnDefinition = "text")
     private String fileName;
 
     @Column(name = "entity_name", nullable = false)
@@ -40,14 +40,14 @@ public class UploadFileHistory {
     private Long uploaded;
 
     @Column(name = "upload_date", nullable = false)
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime uploadDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status;
 
-    @Column(name = "error_message")
+    @Column(name = "error_message", columnDefinition = "text")
     private String errorMessage;
 
     @ManyToOne

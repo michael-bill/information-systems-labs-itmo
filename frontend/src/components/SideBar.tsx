@@ -43,6 +43,11 @@ const SideBar: React.FC<SideBarProps> = ({ setState }) => {
       state: MenuState.Map, 
       icon: RiMapPinLine 
     },
+    { 
+      name: "История загрузки файлов", 
+      state: MenuState.UploadFileHistory, 
+      icon: RiLogoutBoxLine 
+    },
   ];
 
   return (

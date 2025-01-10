@@ -20,7 +20,7 @@ const FlatList: React.FC = () => {
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const pageSize = 4;
+    const pageSize = 10;
 
     const { getRole, token, login } = useStorage();
     const isAdmin = useMemo(() => getRole() === Role.ADMIN, [getRole]);

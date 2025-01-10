@@ -8,6 +8,7 @@ import SpaceMap from "../components/view/FlatMap";
 import { useStorage } from "../storage/storage";
 import Flats from "../components/view/Flats";
 import Houses from "../components/view/Houses";
+import UploadFileHistoryV from "../components/view/UploadFileHistory";
 
 const MenuPage: React.FC = () => {
   const { currentMenuState, setCurrentMenuState } = useStorage();
@@ -29,6 +30,8 @@ const MenuPage: React.FC = () => {
         return <Admin />;
       case MenuState.Map:
         return <SpaceMap />;
+      case MenuState.UploadFileHistory:
+        return <UploadFileHistoryV />;
       default:
         return <Dashboard />;
     }

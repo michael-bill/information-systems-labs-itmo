@@ -4,6 +4,7 @@ enum MenuState {
   Admin,
   Dashboard,
   Map,
+  UploadFileHistory,
 }
 
 export { MenuState };
