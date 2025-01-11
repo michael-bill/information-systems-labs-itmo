@@ -1,6 +1,8 @@
 package com.michael.app.entity;
 
+import com.michael.app.entity.validation.ValidMinimalPrice;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,6 +26,9 @@ import lombok.Setter;
 
 import java.time.ZonedDateTime;
 
+import static java.lang.Math.sqrt;
+
+@ValidMinimalPrice
 @Data
 @Builder
 @AllArgsConstructor
@@ -97,12 +102,19 @@ public class Flat {
         this.creationDate = ZonedDateTime.now();
     }
 
+    private static float calculateMinimalPrice(float area) {
+        return (float) sqrt(area) * 10.f;
+    }
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
     @Setter
+    @Embeddable
     public static class Coordinates {
+        @NotNull(message = "Координата X не может быть пустой")
         private Long x;
+        @NotNull(message = "Координата Y не может быть пустой")
         private Long y;
     }
 
