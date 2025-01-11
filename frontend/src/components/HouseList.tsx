@@ -325,16 +325,25 @@ const HouseList = () => {
             </span>
           </label>
 
-          <button
-            onClick={() => {
-              setSelectedHouseId(null);
-              setHouseToEdit(null);
-              setIsPopUpOpen(true);
-            }}
-            className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
-          >
-            Добавить новый дом
-          </button>
+          <div>
+            <button
+                className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300 mr-4"
+            >
+              {/* Надо доделать, ссылка на swagger: http://localhost:8080/swagger-ui/index.html?configUrl=%2Fv3%2Fapi-docs%2Fswagger-config&urls.primaryName=internal;#/Работа%20с%20объектами%20House/uploadFromFile */}
+                Загрузить файл с домами в формате JSON
+            </button>
+            <button
+              onClick={() => {
+                setSelectedHouseId(null);
+                setHouseToEdit(null);
+                setIsPopUpOpen(true);
+              }}
+              className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+            >
+              Добавить новый дом
+            </button>
+          </div>
+
         </div>
 
         <div className="flex-1 overflow-hidden flex flex-col">

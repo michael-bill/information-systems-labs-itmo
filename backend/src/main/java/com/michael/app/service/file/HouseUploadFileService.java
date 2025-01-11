@@ -33,7 +33,7 @@ public class HouseUploadFileService {
     private final ObjectMapper objectMapper;
     private final UploadFileHistoryService uploadFileHistoryService;
 
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class, Error.class})
     public UploadFileHistory uploadFromJsonFile(User user, MultipartFile file) {
 
         UploadFileHistory failureUploadFileHistory = UploadFileHistory.builder()

@@ -425,15 +425,24 @@ const FlatList: React.FC = () => {
                         </span>
                     </label>
 
-                    <button
-                        onClick={() => {
-                            setSelectedFlatId(null);
-                            setIsPopUpOpen(true);
-                        }}
-                        className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
-                    >
-                        Добавить новую квартиру
-                    </button>
+                    <div>
+                        <button
+                            className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300 mr-4"
+                        >
+                            {/* Надо доделать, ссылка на swagger: http://localhost:8080/swagger-ui/index.html?configUrl=%2Fv3%2Fapi-docs%2Fswagger-config&urls.primaryName=internal;#/Работа%20с%20объектами%20Flat/uploadFromFile_1 */}
+                            Загрузить файл с квартирами в формате JSON
+                        </button>
+                        <button
+                            onClick={() => {
+                                setSelectedFlatId(null);
+                                setIsPopUpOpen(true);
+                            }}
+                            className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300"
+                        >
+                            Добавить новую квартиру
+                        </button>
+                    </div>
+
                 </div>
 
                 {/* Table Section - Fills remaining space */}

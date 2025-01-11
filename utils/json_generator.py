@@ -38,8 +38,8 @@ def generate_flat_data(num_elements):
                 "y": round(random.uniform(0, 1000), 2)
             },
             "creationDate": generate_random_date(),
-            "area": round(random.uniform(10, 500), 2),
-            "price": round(random.uniform(10000, 1000000), 2),
+            "area": round(random.uniform(10, 150), 2),
+            "price": round(random.uniform(100_000, 1_000_000), 2),
             "balcony": random.choice([True, False]),
             "timeToMetroOnFoot": random.randint(1, 60),
             "numberOfRooms": random.randint(1, 7),

@@ -35,7 +35,7 @@ public class FlatUploadFileService {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class, Error.class})
     public UploadFileHistory uploadFromJsonFile(User user, MultipartFile file) {
 
         UploadFileHistory failureUploadFileHistory = UploadFileHistory.builder()

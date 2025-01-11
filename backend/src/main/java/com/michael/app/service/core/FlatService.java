@@ -10,6 +10,7 @@ import com.michael.app.repository.HouseRepository;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FlatService {
@@ -50,6 +52,7 @@ public class FlatService {
         updatedFlat.setId(id);
         updatedFlat = flatRepository.save(updatedFlat);
         notificationService.notifyAboutChange(updatedFlat);
+        log.info("flat with id {} updated", updatedFlat.getId());
         return updatedFlat;
     }
 
