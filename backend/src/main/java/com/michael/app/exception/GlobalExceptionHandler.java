@@ -50,8 +50,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UploadFileException.class)
     public ResponseEntity<UploadFileHistory> handleUploadFileException(UploadFileException ex) {
-        uploadFileHistoryService.save(ex.getUploadFileHistory());
-        return new ResponseEntity<>(ex.getUploadFileHistory(), HttpStatus.BAD_REQUEST);
+        UploadFileHistory history = uploadFileHistoryService.save(ex.getUploadFileHistory());
+        return new ResponseEntity<>(history, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

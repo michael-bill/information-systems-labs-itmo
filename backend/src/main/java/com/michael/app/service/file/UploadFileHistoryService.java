@@ -3,6 +3,7 @@ package com.michael.app.service.file;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.repository.UploadFileHistoryRepository;
@@ -23,6 +24,10 @@ public class UploadFileHistoryService {
 
     public Page<UploadFileHistory> getAll(Pageable pageable) {
         return uploadFileHistoryRepository.findAll(pageable);
+    }
+
+    public Optional<UploadFileHistory> findById(Long id) {
+        return uploadFileHistoryRepository.findById(id);
     }
 
     public UploadFileHistory save(UploadFileHistory uploadFileHistory) {

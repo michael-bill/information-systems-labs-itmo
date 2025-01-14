@@ -5,16 +5,19 @@ import com.michael.app.entity.Flat;
 import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.entity.User;
 import com.michael.app.service.core.FlatService;
-import com.michael.app.service.file.FlatUploadFileService;
+import com.michael.app.service.file.FlatFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +32,7 @@ import java.util.Map;
 public class FlatController {
 
     private final FlatService flatService;
-    private final FlatUploadFileService flatUploadFileService;
+    private final FlatFileService flatFileService;
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получение Flat по id")
@@ -146,6 +149,17 @@ public class FlatController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user
     ) {
-        return flatUploadFileService.uploadFromJsonFile(user, file);
+        return flatFileService.uploadFromJsonFile(user, file);
+    }
+
+    @GetMapping(value = "/download/{file_id}")
+    @Operation(summary = "Скачать Flat из json файла")
+    public ResponseEntity<InputStreamResource> downloadFromFile(
+            @Parameter(description = "Id загрузки файла") @PathVariable("file_id") Long fileId
+    ) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"flats.json\"")
+                .body(flatFileService.downloadFile(fileId));
     }
 }

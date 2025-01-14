@@ -6,16 +6,19 @@ import com.michael.app.entity.House;
 import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.entity.User;
 import com.michael.app.service.core.HouseService;
-import com.michael.app.service.file.HouseUploadFileService;
+import com.michael.app.service.file.HouseFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +33,7 @@ import java.util.Map;
 public class HouseController {
 
     private final HouseService houseService;
-    private final HouseUploadFileService houseUploadFileService;
+    private final HouseFileService houseFileService;
 
     @GetMapping("/get/{id}")
     @Operation(summary = "Получение House по id")
@@ -119,6 +122,17 @@ public class HouseController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal User user
     ) {
-        return houseUploadFileService.uploadFromJsonFile(user, file);
+        return houseFileService.uploadFromJsonFile(user, file);
+    }
+
+    @GetMapping(value = "/download/{file_id}")
+    @Operation(summary = "Скачать Flat из json файла")
+    public ResponseEntity<InputStreamResource> downloadFromFile(
+            @PathVariable("file_id") Long fileId
+    ) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"houses.json\"")
+                .body(houseFileService.downloadFile(fileId));
     }
 }

@@ -11,36 +11,36 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.michael.app.dto.FlatDto;
-import com.michael.app.entity.Flat;
 import com.michael.app.entity.House;
 import com.michael.app.entity.UploadFileHistory;
 import com.michael.app.entity.User;
 import com.michael.app.exception.UploadFileException;
-import com.michael.app.repository.FlatRepository;
+import com.michael.app.repository.HouseRepository;
 import com.michael.app.service.core.NotificationService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
-public class FlatUploadFileService {
+public class HouseFileService {
 
-    private final FlatRepository flatRepository;
-    private final UploadFileHistoryService uploadFileHistoryService;
+    private final HouseRepository houseRepository;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
+    private final UploadFileHistoryService uploadFileHistoryService;
+    private final MinioService minioService;
 
     @Transactional(rollbackFor = {Exception.class, Error.class})
     public UploadFileHistory uploadFromJsonFile(User user, MultipartFile file) {
 
         UploadFileHistory failureUploadFileHistory = UploadFileHistory.builder()
                 .fileName(file.getOriginalFilename())
-                .entityName(Flat.class.getSimpleName())
+                .entityName(House.class.getSimpleName())
                 .uploaded(0L)
                 .uploadDate(LocalDateTime.now())
                 .status(UploadFileHistory.Status.FAILURE)
@@ -54,51 +54,55 @@ public class FlatUploadFileService {
         }
 
         try (
-                InputStream inputStream = file.getInputStream();
-                JsonParser jsonParser = objectMapper.getFactory().createParser(inputStream)
+            InputStream inputStream = file.getInputStream();
+            JsonParser jsonParser = objectMapper.getFactory().createParser(inputStream)
         ) {
             if (jsonParser.nextToken() != JsonToken.START_ARRAY) {
-                throw new IllegalArgumentException("Ожидался массив объектов");
+                throw new IllegalArgumentException("Ожидался массив json объектов");
             }
 
             long counter = 0;
 
-            List<Flat> chunk = new ArrayList<>();
+            List<House> chunk = new ArrayList<>();
             int chunkSize = 1000;
 
             while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
 
-                FlatDto flatDto = objectMapper.readValue(jsonParser, FlatDto.class);
-                Flat flat = FlatDto.convertFromDto(
-                        flatDto,
-                        House.builder().id(flatDto.getHouseId()).build(),
-                        user
-                );
-                chunk.add(flat);
+                House house = objectMapper.readValue(jsonParser, House.class);
+                house.setUser(user);
+
+                chunk.add(house);
                 counter++;
 
                 if (chunk.size() == chunkSize) {
-                    flatRepository.saveAll(chunk);
+                    houseRepository.saveAll(chunk);
                     chunk.forEach(notificationService::notifyAboutCreate);
                     chunk.clear();
                 }
             }
 
             if (!chunk.isEmpty()) {
-                flatRepository.saveAll(chunk);
+                houseRepository.saveAll(chunk);
                 chunk.forEach(notificationService::notifyAboutCreate);
             }
 
             UploadFileHistory successUploadFileHistory = UploadFileHistory.builder()
                     .fileName(file.getOriginalFilename())
-                    .entityName(Flat.class.getSimpleName())
+                    .entityName(House.class.getSimpleName())
                     .uploaded(counter)
                     .uploadDate(LocalDateTime.now())
                     .status(UploadFileHistory.Status.SUCCESS)
                     .user(user)
                     .build();
 
-            uploadFileHistoryService.save(successUploadFileHistory);
+            successUploadFileHistory = uploadFileHistoryService.save(successUploadFileHistory);
+
+            minioService.uploadFile(
+                    String.valueOf(successUploadFileHistory.getId()),
+                    file.getInputStream(),
+                    file.getSize(),
+                    file.getContentType()
+            );
 
             return successUploadFileHistory;
         } catch (ConstraintViolationException e) {
@@ -128,6 +132,19 @@ public class FlatUploadFileService {
 
             failureUploadFileHistory.setErrorMessage(message);
             throw new UploadFileException(message, failureUploadFileHistory);
+        }
+    }
+
+    public InputStreamResource downloadFile(Long uploadFileHistoryId) {
+        UploadFileHistory file = uploadFileHistoryService.findById(uploadFileHistoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Файл с таким id не был найден на сервере"));
+        if (file.getStatus() != UploadFileHistory.Status.SUCCESS) {
+            throw new IllegalArgumentException("Нельзя скачать не успешно загруженный файл");
+        }
+        try {
+            return new InputStreamResource(minioService.getFile(String.valueOf(file.getId())));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Произошла ошибка при скачивайнии файла файла или файл не был найден");
         }
     }
 }
