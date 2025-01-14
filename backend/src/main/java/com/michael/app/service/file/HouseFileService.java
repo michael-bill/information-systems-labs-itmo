@@ -127,7 +127,7 @@ public class HouseFileService {
 
             if (e.getMessage().contains("violates foreign key constraint")) {
                 message = "Произошла ошибка при загрузке файла, причина: " +
-                        "неверно указан идентификатор дома";
+                        "неверно указан идентификатор House";
             }
 
             failureUploadFileHistory.setErrorMessage(message);

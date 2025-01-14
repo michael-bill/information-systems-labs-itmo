@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UploadFileHistoryRepository extends JpaRepository<UploadFileHistory, Long>, JpaSpecificationExecutor<UploadFileHistory> {
+    boolean existsByIdAndStatus(Long id, UploadFileHistory.Status status);
 }
