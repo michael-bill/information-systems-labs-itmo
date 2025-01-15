@@ -133,6 +133,8 @@ public class FlatFileService {
             if (e.getMessage().contains("violates foreign key constraint")) {
                 message = "Произошла ошибка при загрузке файла, причина: " +
                         "неверно указан идентификатор House";
+            } else if (e.getMessage().toLowerCase().contains("failed to connect to")) {
+                message = "Не удалось подключиться к файловому хранилищу";
             }
 
             failureUploadFileHistory.setErrorMessage(message);
