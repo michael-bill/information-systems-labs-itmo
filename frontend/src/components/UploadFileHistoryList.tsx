@@ -8,6 +8,7 @@ import { UploadFileHistory } from "../types/UploadFileHistory";
 import Loading from "./Loading";
 import Filter from "../types/Filter";
 import { createUploadFileHistoryWebSocket } from "../api/ws/uploadFileHistoryWS";
+import { FaDownload } from "react-icons/fa";
 
 const UploadFileHistoryList: React.FC = () => {
     const [uploadFileHistorys, setHistory] = useState<UploadFileHistory[]>([]);
@@ -78,6 +79,19 @@ const UploadFileHistoryList: React.FC = () => {
         }
     }, [token, currentPage, pageSize, sortColumn, sortDirection, filters, isInitialLoading]);
 
+    const handleDownload = useCallback((id: number, entityName: string) => {
+        try {
+            if (entityName === "House") {
+                uploadFileHistoryApi.donwloadHouseFile(token, id);
+            } else if (entityName === "Flat") {
+                uploadFileHistoryApi.donwloadFlatFile(token, id);
+            }
+        } catch (error) {
+            console.error("Error downloading file:", error);
+            setToast({ message: "Ошибка при загрузке файла", type: "error" });
+        }
+    }, [token]);
+
     useEffect(() => {
         fetchWithFilter();
     }, [fetchWithFilter]);
@@ -113,9 +127,21 @@ const UploadFileHistoryList: React.FC = () => {
                 <td className="p-3">{historyItem.status}</td>
                 <td className="p-3">{historyItem.errorMessage}</td>
                 <td className="p-3">{historyItem.user.username}</td>
+                <td className="p-3">
+                <div className="flex justify-center space-x-2">
+                    <button
+                        onClick={() => handleDownload(historyItem.id, historyItem.entityName)}
+                        disabled={historyItem.status == "FAILED"}
+                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-md transition-colors duration-300"
+                        title="Скачать"
+                    >
+                        <FaDownload size={16} />
+                    </button>
+                </div>
+            </td>
             </tr>
         ));
-    }, [uploadFileHistorys, isAdmin, login, isSaving, deletingMarineId]);
+    }, [uploadFileHistorys, isAdmin, login, isSaving, deletingMarineId, handleDownload]);
 
     // Add handleSort function
     const handleSort = useCallback((column: string) => {

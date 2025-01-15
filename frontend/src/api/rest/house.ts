@@ -158,3 +158,26 @@ export const fetchWithFilter = async (
     }
   );
 };
+
+export const uploadHouseJsonFile = async (token: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await axios.post(`${BASE_URL}/upload/json`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response;
+  } catch (error: any) {
+    if (error.response) {
+      return error.response;
+    }
+    return {
+      status: 500,
+      data: { message: error.message }
+    };
+  }
+};

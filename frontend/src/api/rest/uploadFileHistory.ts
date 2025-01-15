@@ -45,3 +45,51 @@ export const fetchWithFilter = async (
     }
   );
 };
+
+export const donwloadFlatFile = async (token: string, id: number) => {
+
+  const response = await axios.get(`${HTTP_URL}/flat/download/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    responseType: "blob",
+  });
+
+  // Создаем ссылку для скачивания
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'flat-file.json'); // имя файла при скачивании
+
+  // Добавляем ссылку в DOM, кликаем по ней и удаляем
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Очищаем URL
+  window.URL.revokeObjectURL(url);
+
+  return response;
+};
+
+export const donwloadHouseFile = async (token: string, id: number) => {
+
+  const response = await axios.get(`${HTTP_URL}/house/download/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    responseType: "blob",
+  });
+
+  // Создаем ссылку для скачивания
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'house-file.json'); // имя файла при скачивании
+
+  // Добавляем ссылку в DOM, кликаем по ней и удаляем
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Очищаем URL
+  window.URL.revokeObjectURL(url);
+
+  return response;
+};

@@ -427,9 +427,31 @@ const FlatList: React.FC = () => {
 
                     <div>
                         <button
+                            onClick={() => {
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.accept = '.json';
+                                fileInput.onchange = async (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                    if (!file) return;
+
+                                    const response = await flatApi.uploadFlatJsonFile(token, file);
+                                    if (response.status !== 200) {
+                                        setToast({
+                                            message: response.data.message || "Не удалось загрузить файл",
+                                            type: "error"
+                                        });
+                                    } else {
+                                        setToast({
+                                            message: "Файл успешно загружен",
+                                            type: "success"
+                                        });
+                                    }
+                                };
+                                fileInput.click();
+                            }}
                             className="text-sm font-medium text-white bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-300 mr-4"
                         >
-                            {/* Надо доделать, ссылка на swagger: http://localhost:8080/swagger-ui/index.html?configUrl=%2Fv3%2Fapi-docs%2Fswagger-config&urls.primaryName=internal;#/Работа%20с%20объектами%20Flat/uploadFromFile_1 */}
                             Загрузить файл с квартирами в формате JSON
                         </button>
                         <button
